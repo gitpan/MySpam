@@ -15,7 +15,7 @@ use File::Temp qw(tempfile);
 use GDBM_File;
 use Carp qw(croak);
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 #
 # Open up a reporting channel
