@@ -1,0 +1,30 @@
+---
+name: myspam
+version: 0.01
+author:
+  - 'Mark Lawrence <nomad@null.net>'
+abstract: Manage sa-exim Spam
+license: gpl
+resources:
+  license: http://www.opensource.org/licenses/gpl-license.php
+requires:
+  Config::File: 0
+  Email::Simple: 0
+  File::Slurp: 0
+  LockFile::Simple: 0
+  MIME::Lite: 0
+  Test::More: 0
+  Tree::Simple: 1.17
+  XML::API::XHTML: 0.11
+  XML::Parser::Expat: 0
+  perl: 5.6.1
+provides:
+  MySpam::Response:
+    file: lib/MySpam/Response.pm
+  MySpam::Schema:
+    file: lib/MySpam/Schema.pm
+    version: 0.01
+generated_by: Module::Build version 0.28
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2

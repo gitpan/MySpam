@@ -1,0 +1,335 @@
+myspam (0.04-08) stable; urgency=low
+
+  * new upstream
+
+ -- Mark Lawrence <nomad@null.net>  Wed,  3 Oct 2007 22:23:56 +0200
+
+myspam (0.04-07) stable; urgency=low
+
+  * new upstream
+
+ -- Mark Lawrence <nomad@null.net>  Wed,  3 Oct 2007 22:16:35 +0200
+
+myspam (0.04-06) stable; urgency=low
+
+  * new upstream
+
+ -- Mark Lawrence <nomad@null.net>  Wed,  3 Oct 2007 21:48:40 +0200
+
+myspam (0.04-05) stable; urgency=low
+
+  * new upstream
+
+ -- Mark Lawrence <nomad@null.net>  Wed,  3 Oct 2007 20:28:56 +0200
+
+myspam (0.04-04) stable; urgency=low
+
+  * new upstream 
+
+ -- Mark Lawrence <nomad@null.net>  Wed,  3 Oct 2007 20:20:07 +0200
+
+myspam (0.04-03) stable; urgency=low
+
+  * new upstream
+
+ -- Mark Lawrence <nomad@null.net>  Wed,  3 Oct 2007 20:10:54 +0200
+
+myspam (0.04-02) stable; urgency=low
+
+  * New upstream.
+
+ -- Mark Lawrence <nomad@null.net>  Wed,  3 Oct 2007 19:58:01 +0200
+
+myspam (0.04-01) stable; urgency=low
+
+  * New Upstream.
+
+ -- Mark Lawrence <nomad@null.net>  Tue, 18 Sep 2007 13:31:41 +0200
+
+myspam (0.03-06) stable; urgency=low
+
+  * New Upstream
+
+ -- Mark Lawrence <nomad@null.net>  Fri, 14 Sep 2007 17:15:32 +0200
+
+myspam (0.03-05) stable; urgency=low
+
+  * Depends libsql-db-perl >= 0.05-2.
+
+ -- Mark Lawrence <nomad@null.net>  Fri, 14 Sep 2007 10:32:27 +0200
+
+myspam (0.03-04) stable; urgency=low
+
+  * New upstream
+
+ -- Mark Lawrence <nomad@null.net>  Fri, 14 Sep 2007 10:16:21 +0200
+
+myspam (0.03-03) stable; urgency=low
+
+  * New Upstream
+
+ -- Mark Lawrence <nomad@null.net>  Thu, 13 Sep 2007 16:34:06 +0200
+
+myspam (0.03-02) stable; urgency=low
+
+  * New Upstream.
+
+ -- Mark Lawrence <nomad@null.net>  Mon, 10 Sep 2007 16:22:36 +0200
+
+myspam (0.03-01) stable; urgency=low
+
+  * New Upstream.
+
+ -- Mark Lawrence <nomad@null.net>  Sat,  8 Sep 2007 16:02:10 +0200
+
+myspam (0.02-02) stable; urgency=low
+
+   [ Robert Meyer ]
+   * minor changes in Response.pm after user tests
+
+ -- Robert Meyer <robert.meyer@holcim.com>  Tue, 14 Aug 2007 12:13:01 +0000
+myspam (0.02-01) stable; urgency=low
+
+  [ Robert Meyer ]
+  * added functionality to subscribe and unsubscribe for the spam newsletter
+  * reordered versioning
+  *
+
+  [ Mark Lawrence ]
+  * 
+
+ -- Mark Lawrence <nomad@null.net>  Mon, 11 Jun 2007 12:13:01 +0000
+
+myspam (0.02) stable; urgency=low
+
+  * New Upstream.
+  * Moved from dist 'myspam' to 'stable'
+  * First release fully under cogito/git control.
+  * No more changes in the debian/changelog - everything in git please.
+
+ -- Mark Lawrence <nomad@null.net>  Wed,  6 Jun 2007 15:32:28 +0000
+
+myspam (0.01-34) myspam; urgency=low
+
+  * make myspam depend on myspam-common
+
+ -- Mark Lawrence <nomad@null.net>  Tue,  1 May 2007 15:37:02 +0200
+
+myspam (0.01-33) myspam; urgency=low
+
+  * Moved most of myspam-recover into MySpam::Response
+
+ -- Mark Lawrence <nomad@null.net>  Tue,  1 May 2007 15:30:27 +0200
+
+myspam (0.01-32) myspam; urgency=low
+
+  * Implemented message expiry as a cursor instead of importing
+  lots of objects.
+
+ -- Mark Lawrence <nomad@null.net>  Tue, 10 Apr 2007 17:59:41 +0200
+
+myspam (0.01-31) myspam; urgency=low
+
+  * Removed remaining 'filekey' setting in myspam-quarantine
+
+ -- Mark Lawrence <nomad@null.net>  Tue, 10 Apr 2007 17:05:12 +0200
+
+myspam (0.01-30) myspam; urgency=low
+
+  * Removed 'filekey' and added 'ip' columns to Message_0_01.
+  * Now extract and save the incoming IP address for later DNSBL use.
+
+ -- Mark Lawrence <nomad@null.net>  Tue, 10 Apr 2007 16:46:33 +0200
+
+myspam (0.01-29) myspam; urgency=low
+
+  * Fixed bug relating to upper/lower case when comparing email addresses
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Wed,  4 Apr 2007 12:37:22 +0200
+
+myspam (0.01-28) myspam; urgency=low
+
+  * Removed check for existing copy of Message in database. No longer
+  need to do the checks because we are not moving any more data from the
+  old system.
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Mon,  2 Apr 2007 16:34:22 +0200
+
+myspam (0.01-27) myspam; urgency=low
+
+  * Fixed the [seen] message in the syslog output.
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Sat, 17 Mar 2007 18:04:39 +0100
+
+myspam (0.01-26) myspam; urgency=low
+
+  * Force the statoverride
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Sat, 17 Mar 2007 17:06:19 +0100
+
+myspam (0.01-25) myspam; urgency=low
+
+  * Fixed dpkg-statoverride on /etc/myspam.conf
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Sat, 17 Mar 2007 17:04:18 +0100
+
+myspam (0.01-24) myspam; urgency=low
+
+  * Cron job now runs as Debian-exim. Warn on unlink failure.
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Sat, 17 Mar 2007 16:22:52 +0100
+
+myspam (0.01-23) myspam; urgency=low
+
+  * Perform a check on the age of the file, and skip it if over two weeks old
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Sat, 17 Mar 2007 03:53:03 +0100
+
+myspam (0.01-22) myspam; urgency=low
+
+  * No return value from update(). So don't die...
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Sat, 17 Mar 2007 03:29:32 +0100
+
+myspam (0.01-21) myspam; urgency=low
+
+  * Don't just remove the files, but add the recipient to the message...
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Sat, 17 Mar 2007 03:15:13 +0100
+
+myspam (0.01-20) myspam; urgency=low
+
+  * Remove the files that we have alrady seen. (they are copies generated
+  by the old myspam solution).
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Sat, 17 Mar 2007 02:34:30 +0100
+
+myspam (0.01-19) myspam; urgency=low
+
+  * Just trying to make things work, now.
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Sat, 17 Mar 2007 02:12:45 +0100
+
+myspam (0.01-18) myspam; urgency=low
+
+  * So now we have to eval File::slurp as well.
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Sat, 17 Mar 2007 01:39:58 +0100
+
+myspam (0.01-17) myspam; urgency=low
+
+  * Temporary Lockfile fix
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Sat, 17 Mar 2007 00:51:35 +0100
+
+myspam (0.01-16) myspam; urgency=low
+
+  * Finally did an eval around the Message and Recipient object creations
+  so we don't die on some stupid spammers badly formatted message.
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Sat, 17 Mar 2007 00:40:59 +0100
+
+myspam (0.01-15) myspam; urgency=low
+
+  * Go live!!! No we do the unlink for real.
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Fri, 16 Mar 2007 23:39:18 +0100
+
+myspam (0.01-14) myspam; urgency=low
+
+  * Fixed up schema (returned to iset instead of set)
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Fri, 16 Mar 2007 22:42:22 +0100
+
+myspam (0.01-13) myspam; urgency=low
+
+  * Use Tangram::Compat
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Fri, 16 Mar 2007 22:34:14 +0100
+
+myspam (0.01-12) myspam; urgency=low
+
+  * Now rely (in debian/control) on tangram 2.10
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Fri, 16 Mar 2007 22:33:27 +0100
+
+myspam (0.01-11) myspam; urgency=low
+
+  * Added workaround for the old and the new myspam systems to work
+  in parallel.
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Fri, 16 Mar 2007 19:54:28 +0100
+
+myspam (0.01-10) myspam; urgency=low
+
+  * Quietened down some warnings when File::Find calls quarantine() with
+    and empty $_ argument.
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Fri, 16 Mar 2007 18:39:27 +0100
+
+myspam (0.01-9) myspam; urgency=low
+
+  * Added lots of default values to the generate() call. Heap of spam
+    not very well formed...
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Fri, 16 Mar 2007 18:13:13 +0100
+
+myspam (0.01-8) myspam; urgency=low
+
+  * Increased the size of the h_to field because some spam has a huge
+    number of recipients...
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Fri, 16 Mar 2007 18:04:46 +0100
+
+myspam (0.01-7) myspam; urgency=low
+
+  * Removed speedy-cgi-perl dependency for now.
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Fri, 16 Mar 2007 17:12:59 +0100
+
+myspam (0.01-6) myspam; urgency=low
+
+  * Change of Schema. Now only a single copy of each message.
+    The normal search now takes place on only one table. This version
+    installs myspam as myspam2@domain, and does not unlink files after
+    quarantining.
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Thu, 15 Mar 2007 16:53:32 +0100
+
+myspam (0.01-5) myspam; urgency=low
+
+  * Now use File::Slurp to include myspam.css at runtime.
+  * debian/control and Makefile.PL require File::Slurp
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Tue, 20 Feb 2007 08:51:30 +0100
+
+myspam (0.01-4) myspam; urgency=low
+
+  * Fixed up 'exit' to return '0' (otherwise exim fails delivery)
+  * Removed all checks for holcim.com (but not all comments)
+  * Use current time in the event that incoming mail has no Date:
+  * Added 'ignore_status' field to exim transport router for recovery
+    due to some issue with return value from speedy. Exim was still
+    failing delivery...
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Mon, 19 Feb 2007 14:20:15 +0100
+
+myspam (0.01-3) myspam; urgency=low
+
+  * Added dpkg-statoverride on /etc/myspam.conf
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Sun, 21 Jan 2007 09:52:20 +0100
+
+myspam (0.01-2) myspam; urgency=low
+
+  * Added missing cron.d file
+  * user 'myspam' now added on configure and removed on purge.
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Sun, 21 Jan 2007 09:46:40 +0100
+
+myspam (0.01-1) myspam; urgency=low
+
+  * Initial release.
+
+ -- mlawren <mlawren@lifebook.rekudos.net>  Tue, 31 Oct 2006 15:08:13 +0100
+

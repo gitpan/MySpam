@@ -1,0 +1,530 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+BEGIN {
+    use File::Basename;
+    my $dir = dirname($0) .'/../lib';
+    unshift(@INC, $dir) if(-d $dir);
+}
+use Getopt::Std;
+use LockFile::Simple;
+use MySpam;
+use MySpam::Email;
+
+
+my %opts;
+getopt('c', \%opts);
+
+
+sub usage {
+    my $me = basename($0);
+    die
+"usage: $me [-c <config>] <command> [args]
+
+where <command> [args] is one of:
+    install       [--db]
+    quarantine    <file>|<directory> [--rm]
+    expire
+    list          <recipient>
+    release       <recipient> <id>
+    print         <recipient> <id>
+    whitelist     <recipient> <sender>
+    unwhitelist   <recipient> <sender>
+    listwhitelist
+    genwhitelist
+    subscribe     <recipient>
+    subscribe2    <recipient>
+    unsubscribe   <recipient>
+    newsletter    1|2 [--send]
+";
+}
+
+
+my $m;
+sub cm { # Connect to MySpam
+    $m = MySpam->new($opts{c}) unless($m);
+}
+
+
+sub install {
+    my $real = shift;
+    cm();
+
+    if (!$real) {
+        print "No --db option - printing schema only:\n\n";
+        print join(";\n", map {$_->sql_create} $m->db->tables)
+                . ";\n";
+        return;
+    }
+    
+    if ($real ne '--db') {
+        usage;
+    }
+
+    if ($m->deploy) {
+        print "Database installed\n";
+        return;
+    }
+    else {
+        die "Database NOT installed";
+    }
+}
+
+
+# Internal method - not documented.
+sub quarantine_file {
+    my $file = shift || die 'takes a file, dummy!';
+    my $rm   = shift || '';
+
+    cm();
+
+    if ($m->quarantine_file($file)) {
+        print "$file: Quarantined $rm\n";
+        $rm && unlink($file);
+    }
+    else {
+        die "$file: could NOT be quarantined";
+    }
+}
+
+
+sub quarantine {
+    my $obj = shift || usage;
+    my $rm  = shift;
+
+    if ($rm and $rm ne '--rm') {
+        usage;
+    }
+
+    my @files;
+
+    if (-f $obj) {
+        push(@files, $obj);
+    }
+    elsif (-d $obj) {
+        opendir(DIR, $obj) || die "opendir($obj): $!";
+        @files = map {$obj .'/'. $_} readdir(DIR);
+    }
+    else {
+        die "$obj not a file or a directory";
+    }
+
+
+    my $lockmgr = LockFile::Simple->make(
+        -autoclean => 1,
+        -format    => '%f.lck',
+        -hold      => 10000000,
+        -stale     => 1,
+        -delay     => 2,
+        -max       => 5,
+        -nfs       => 0,
+        -warn      => 0,
+    );
+
+    my $me = basename($0);
+    if (!$lockmgr->lock("/var/lock/$me")) {
+        die "Could not lock /var/lock/$me: $!";
+    }
+
+    foreach my $file (@files) {
+        if (-f $file) {
+            quarantine_file($file, $rm);
+        }
+    }
+
+    $lockmgr->unlock("/var/lock/$me");
+}
+
+
+sub expire {
+    cm();
+    $m->expire;
+}
+
+
+sub list {
+    my $recipient = shift || usage;
+    cm();
+    my @results = $m->get_quarantined_mails($recipient);
+
+    print "Quarantined mails for $recipient:\n";
+    print "------------------------------------------------------------\n";
+    foreach my $r (@results) {
+        print
+            ' Quarantined: '. gmtime($r->epoch) ." UTC\n".
+            ' From: '. $r->h_from ."\n".
+            ' Subject: '. $r->h_subject ."\n".
+            ' Score: '. $r->sa_score ."\n".
+            ' ID: '.$r->id.' (last released: '. 
+               ($r->released ? gmtime($r->released).' UTC' :'Never'). ")\n\n"
+            ;
+    }
+    if (!@results) {
+        print " None\n\n";
+    }
+
+    print "Whitelist for $recipient:\n";
+    print "------------------------------------------------------------\n";
+#    $SQL::DB::DEBUG=1;
+    my @wl = $m->get_whitelist($recipient);
+    foreach my $w (@wl) {
+        print ' '. $w->sender . "\n";
+    }
+    if (!@wl) {
+        print " None\n\n";
+    }
+
+    print "Subscription Status for $recipient:\n";
+    print "------------------------------------------------------------\n";
+    if (my $s = $m->get_subscriber($recipient)) {
+        print " Subscribed to ". $s->period . "\n\n";
+    }
+    else {
+        print " Not subscribed\n\n";
+    }
+}
+
+
+sub release {
+    my $recipient = shift || usage;
+    my $id        = shift || usage;
+    cm();
+
+    if ($m->release($recipient,$id)) {
+        print "Mail Released\n";
+    }
+    else {
+        die "Mail NOT Released";
+    }
+}
+
+
+sub printraw {
+    my $email = shift || usage;
+    my $id    = shift || usage;
+    cm();
+
+    my ($recipient, $raw) = $m->raw($email,$id);
+    if($raw) {
+        print $raw;
+        return;
+    }
+    die "Mail not found";
+}
+
+
+sub whitelist {
+    my $recipient = shift || usage;
+    my $sender    = shift || usage;
+    cm();
+
+    if ($m->add_to_whitelist($recipient,$sender)) {
+        print "$sender is whitelisted\n";
+    }
+    else {
+        die "$sender is NOT whitelisted";
+    }
+}
+
+
+sub unwhitelist { my $recipient = shift || usage;
+    my $sender    = shift || usage;
+    cm();
+
+    if ($m->remove_from_whitelist($recipient,$sender)) {
+        print "$sender is not whitelisted\n";
+    }
+    else {
+        die "$sender COULD NOT be unwhitelisted";
+    }
+}
+
+
+sub listwhitelist {
+    cm();
+
+    foreach my $entry ($m->get_whitelist_all()) {
+        printf("%-30s %s\n", $entry->sender, $entry->recipient);
+    }
+}
+
+
+sub genwhitelist {
+    cm();
+    my $file = shift;
+
+    if (!$m->generate_whitelist_dbm($file)) {
+        die "Whitelist generation failed";
+    };
+}
+
+
+sub subscribe {
+    my $recipient = shift || usage;
+    my $period    = 1;
+    cm();
+
+    if ($m->subscribe($recipient,$period)) {
+        print "$recipient is subscribed($period)\n";
+    }
+    else {
+        die "$recipient is NOT subscribed($period)";
+    }
+}
+
+
+sub subscribe2 {
+    my $recipient = shift || usage;
+    my $period    = 2;
+    cm();
+
+    if ($m->subscribe($recipient,$period)) {
+        print "$recipient is subscribed($period)\n";
+    }
+    else {
+        die "$recipient is NOT subscribed($period)";
+    }
+}
+
+
+sub unsubscribe {
+    my $recipient = shift || usage;
+    cm();
+
+    if ($m->unsubscribe($recipient)) {
+        print "$recipient is unsubscribed\n";
+    }
+    else {
+        die "$recipient is NOT unsubscribed";
+    }
+}
+
+
+sub newsletter {
+    my $send = shift || '';
+    $send = $send eq '--send';
+
+    cm();
+    my @list = $m->subscriber_newsletter_list;
+
+    if (!$send) {
+
+        print "Subscribers due for a newsletter:\n";
+        foreach my $sub (@list) {
+            print '    ' . $sub->subscriber ."\n";
+        }
+        return;
+    }
+
+    my $e = MySpam::Email->new($opts{c});
+
+    foreach my $sub (@list) {
+        (my $domain = $sub->subscriber) =~ s/.*\@//;
+        $e->reset;
+        $e->to($sub->subscriber);
+        $e->from('myspam@'. $domain);
+        if ($sub->period == 1) {
+            $e->subject('MySpam Weekly Newsletter');
+        }
+        else {
+            $e->subject('MySpam Bi-Weekly Newsletter');
+        }
+        $e->list($sub->last_sent);
+        $e->send;
+        $m->subscriber_sent($sub);
+    }
+}
+
+
+my $cmd = lc(shift @ARGV) || usage;
+
+if ($cmd eq 'install') {
+    install(@ARGV);
+}
+elsif ($cmd eq 'quarantine') {
+    quarantine(@ARGV);
+}
+elsif ($cmd eq 'expire') {
+    expire;
+}
+elsif ($cmd eq 'list') {
+    list(@ARGV);
+}
+elsif ($cmd eq 'release') {
+    release(@ARGV);
+}
+elsif ($cmd eq 'print') {
+    printraw(@ARGV);
+}
+elsif ($cmd eq 'whitelist') {
+    whitelist(@ARGV);
+}
+elsif ($cmd eq 'unwhitelist') {
+    unwhitelist(@ARGV);
+}
+elsif ($cmd eq 'listwhitelist') {
+    listwhitelist(@ARGV);
+}
+elsif ($cmd eq 'genwhitelist') {
+    genwhitelist(@ARGV);
+}
+elsif ($cmd eq 'subscribe') {
+    subscribe(@ARGV);
+}
+elsif ($cmd eq 'subscribe2') {
+    subscribe2(@ARGV);
+}
+elsif ($cmd eq 'unsubscribe') {
+    unsubscribe(@ARGV);
+}
+elsif ($cmd eq 'newsletter') {
+    newsletter(@ARGV);
+}
+else {
+    usage;
+}
+
+
+__END__
+
+=head1 NAME
+
+myspam - Command-line interface to the MySpam application
+
+=head1 SYNOPSIS
+
+  myspam [-c <config>] <command> [args]
+
+=head1 DESCRIPTION
+
+MySpam is all about managing mail that has been blocked by sa-exim.
+B<myspam> is the shell (administrative) interface to MySpam. Most users
+would only interact with MySpam using the email interface (see
+L<myspam-smtp> for details).
+
+<command> usually results in some kind of action in the MySpam database,
+or may result in emails being sent.
+
+=head2 -c config
+
+Specify a configuration file other than the default /etc/myspam/myspam.conf.
+
+=head1 COMMANDS
+
+=head2 install [--db]
+
+Prints the CREATE statements used to build the database tables and indexes.
+If the optional '--db' if given then the actions will actually be
+run against in the database. You only need to run this action once against
+the database. (Users of the Debian package don't need to do this at all -
+the database is created at installation time).
+
+=head2 quarantine <file>|<directory> [--rm]
+
+Imports into the database <file> or the files in <directory>. If '--rm'
+is specified then the file(s) will be removed after successfully being
+inserted.
+
+The files to be imported must be in standard mbox format and must have
+a X-SA-Exim-Rcpt-To: header. This header is only added by sa-exim if
+SAmaxrcptlistlength in /etc/exim4/sa-exim.conf is set to a positive value.
+
+=head2 expire
+
+Delete old mails from the database. The maximum age of a mail is determined
+by the 'expire' item in /etc/myspam/myspam.conf. This command would
+not normally be run by hand but would be called from a cron(8) job.
+
+=head2 list <recipient>
+
+List the mails which are in the database for <recipient>
+
+=head2 release <recipient> <id>
+
+Release the mail with matching <recipient> and <id>.
+
+=head2 whitelist <recipient> <sender>
+
+Add address <sender> to the whitelist for <recipient>. The whitelist
+functionality only works if the appropriate plugin for SpamAssassin
+has been installed and configured.
+
+=head2 unwhitelist <recipient> <sender>
+
+Remove address <sender> from the whitelist for <recipient>. The whitelist
+functionality only works if the appropriate plugin for SpamAssassin
+has been installed and configured.
+
+=head2 listwhitelist
+
+Print the complete whitelist.
+
+=head2 genwhitelist
+
+Generates a Berkeley DBM file containing sender/recipient pairs in the
+whitelist. This DBM file can be used by the MySpam/Whitelist plugin
+for SpamAssassin to decrease the score for matching pairs. This command
+is not normally run by hand but would be called by a cron(8) job.
+
+=head2 subscribe <recipient>
+
+Add the address <recipient> to the weekly subscription
+list. The weekly subscription list is used by the newsletter command to send
+an automatic 'list' to subscribers each week. <recipient> will
+automatically be removed from the bi-weekly list if subscribed there.
+
+=head2 subscribe2 <recipient>
+
+Add the address <recipient> to the bi-weekly subscription
+list. The bi-weekly subscription list is used by the newsletter command
+to send an automatic 'list' to subscribers every second week. <recipient>
+will automatically be removed from the bi-weekly list if subscribed there.
+
+=head2 unsubscribe <recipient>
+
+Remove the address <recipient> from all subscription lists.
+
+=head2 newsletter [--send]
+
+For each address subscribed to the weekly subscription, send a 'list'
+response if it has been more than six days since their last newsletter.
+
+For each address subscribed to the bi-weekly subscription, send a 'list'
+response if it has been more than thirteen days since their last newsletter.
+
+If --send is not given then this command merely prints the addresses that
+would receive a newsletter.
+
+This command would not normally be run by hand but called from a
+cron(8) job.
+
+=head1 FILES
+
+/etc/myspam/myspam.conf - database connection information
+
+/etc/myspam/myspam.css - style definition for HTML email
+
+/etc/spamassassin/whitelistdbm.cf
+
+/var/log/mail.* - syslog(8) reporting of success or failure
+
+=head1 SEE ALSO
+
+L<MySpam>, L<myspam-smtp>
+
+=head1 AUTHOR
+
+Mark Lawrence E<lt>nomad@null.netE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2007 Mark Lawrence <nomad@null.net>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+=cut
+
+# vim: set tabstop=4 expandtab:

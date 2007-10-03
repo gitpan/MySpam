@@ -1,0 +1,5 @@
+/etc/myspam/myspam.css
+/etc/exim4/conf.d/router/10-myspam_router
+/etc/exim4/conf.d/transport/40-myspam_transport
+/etc/myspam/myspam.conf
+/etc/spamassassin/whitelistdbm.cf

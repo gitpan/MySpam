@@ -1,0 +1,223 @@
+Commit: e2f6fdf48527337cce9f3681d448a1c0e19b0a1f 
+Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 23:20:13 +0200 
+
+    General
+        New email 'help' command to list the usage.
+    
+    Makefile.PL
+        Perl package name has changed from 'myspam' to 'MySpam'.
+    
+    debian/control
+        Depends on libsql-db-perl >= 0.06-3.
+    
+    debian/myspam.postinst
+        Statoverrides on directories/files is now 'Debian-exim.adm'. Can add
+        yourself to the 'adm' group and run all the commands without having to
+        'sudo'.
+    
+        Fixed the automatic DB installation to actually work now.
+
+Commit: 18d5fb8acd05d1158dbeac4be473085c61f23187 
+Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 22:12:44 +0200 
+
+    README
+        Better description. Mentioned requirement for SAmaxrcptlistlength
+        option in /etc/exim4/sa-exim.conf.
+    
+    bin/myspam
+        Implemented the 'newsletter' option.
+    
+    conf/myspam.conf
+        Default location of whitelist.dbm is now /var/lib/myspam/whitelist.dbm.
+    
+    conf/transport
+        Removed max_output option which seems to break exim in etch.
+    
+    debian/myspam.postinst
+        * Automatically create the database tables on install if dbi points to
+        /var/lib/myspam/myspam.db and that file is empty.
+        * More dpkg-statoverride's for directories and files.
+    
+    debian/rules
+        Uncomment dh_installcron
+    
+    debian/control
+        Improved description.
+    
+    debian/myspam.cron.d
+        Fixed up broken lines and added comments.
+    
+    lib/MySpam.pm
+        New subscriber_newsletter_list() method.
+    
+    lib/MySpam.pm, lib/MySpam/Email.pm
+        Extra $epoch arguments to get_quarantine_mails() and list() in support
+        of the 'newsletter' functionality.
+
+Commit: 7c3eb32400739fbc2d43d7ec5f3a864703dca727 
+Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 17:58:19 +0200 
+
+    bin/myspam
+        Subscription is now done with 'subscribe' and 'subscribe2' to more
+        closely match the email interface commands.
+
+Commit: ee039e0978c7007e9907c87a691d7badf6cc60f2 
+Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 17:48:05 +0200 
+
+    lib/MySpam.pm, lib/MySpam/Email.pm
+        Now validate whitelist addresses using Mail::RFC822::Address.
+    
+    Makefile.PL, debian/control
+        New dependency on Mail::RFC822::Address (and
+        libmail-rfc822-address-perl)
+    
+    t/*
+        Test for the above checks.
+
+Commit: 580616d56746410607270f0b6dc3a78e9acc9746 
+Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 17:30:22 +0200 
+
+    General
+        Almost completed documentation for everything.
+    
+    Makefile.PL
+        Added /var/lib/myspam and /var/lib/myspam/myspam.db to the install.
+        The myspam.db file is zero length, but at least for Debian installs the
+        file will already be owned by Debian-exim.
+    
+    bin/myspam-smtp
+        Make 'subscribe' the same as 'subscribe1' (Thanks to Robert Meyer for
+        the suggestion).
+    
+    conf/myspam.conf
+        Default dbi string is now dbi:SQLite:/var/lib/myspam/myspam.db. This
+        means that in the simplest case the administrator can simply run
+        'myspam install --db' and update-exim4.conf / reload and things will
+        just work.
+    
+    debian/conffiles
+        Added missing /etc/spamassassin/whitelistdbm.cf
+    
+    debian/myspam.cron.d
+        Now complete with 'expire', 'newsletter' and comments.
+
+Commit: 18036523fdc94c982235b5dc208baacd4c198b48 
+Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 12:12:27 +0200 
+
+    Fixes from Robert Meyer <r.meyer@net-wizard.org>:
+    
+        bin/myspam
+            Now takes case-independent command options
+    
+        bin/myspam-smtp
+            * Now takes case-independent Subject: commands
+            * Regex fixes for identifying commands
+    
+        lib/MySpam.pm
+            * Insert only unique recipients for each mail
+            * InnoDB definition for MySQL now works
+            * Make whitelist.dbm file world readable after generation.
+
+Commit: 4e07ecec84de6c0b115a36d5f115dac9c9f76c07 
+Author: Mark Lawrence <nomad@null.net> Tue, 18 Sep 2007 13:30:51 +0200 
+
+    General:
+        Updated to use and depend on SQL::DB v0.06.
+    
+    bin/myspam:
+        New "expire" option, instead of automatically expiring after every
+        quarantine. It doesn't make sense that some command-line user has to
+        wait for that maintenance.
+    
+        cm() method is now cached so can be called multiple times without
+        starting new connections. Moved cm() out of quarantine() into
+        quarantine_file().
+    
+        Bugfix: quarantine_file() was calling MySpam->quarantine() instead
+        of MySpam->quarantine_file().
+        (Thanks to Robert Meyer <r.meyer@net-wizard.org>).
+
+Commit: 1cfd9303c2f4a5ec6b60d53b5578bcd60adb756e 
+Author: Mark Lawrence <nomad@null.net> Fri, 14 Sep 2007 10:15:38 +0200 
+
+    Converted to SQL::DB v0.05.
+    Documentation cleanup of MySpam.pm
+
+Commit: eded39728b0c47a4a93638e981a26677e3d5ed67 
+Author: Mark Lawrence <nomad@null.net> Thu, 13 Sep 2007 16:40:45 +0200 
+
+    Complete rewrite and reorganisation.
+
+Commit: 023b35fb141c13dbd2b8fc81904bba22607801ce 
+Author: Mark Lawrence <nomad@null.net> Wed, 05 Sep 2007 17:09:28 +0200 
+
+    Removed data/ directory. Perl tests will be created under t/ instead.
+
+Commit: e0c9db77cff40c4e729ad4b9d2f6cc2c3233461f 
+Author: Mark Lawrence <nomad@null.net> Wed, 05 Sep 2007 17:06:28 +0200 
+
+    Removed data/ directory. Real tests will be created under t/* instead.
+
+Commit: 59b45d14c31f61c8c38d24fbb3553d42ad3fb15c 
+Author: Mark Lawrence <nomad@null.net> Wed, 05 Sep 2007 17:01:56 +0200 
+
+    Converted Makefile.PL completely to use Module::Install.
+
+Commit: 7274f53bfda75788364fefe62319a52ea0857ade 
+Author: Mark Lawrence <nomad@null.net> Wed, 05 Sep 2007 16:34:48 +0200 
+
+    Removed Changes and inc/* from repository.
+
+Commit: 7639a34dcccb3535a344ba31aa183e2c1c5ff6eb 
+Author: Robert Meyer <robert.meyer@holcim.com> Tue, 14 Aug 2007 11:07:06 +0000 
+
+Commit: 7be3b5e96765b09d20bb2a7b3cba7bc4b440a98d 
+Author: Mark Lawrence <nomad@null.net> Mon, 11 Jun 2007 08:33:15 +0000 
+
+    Documentation for the myspam-newsletter command.
+
+Commit: 86877b65beaec3098d715914e6f36061428659d8 
+Author: Robert Meyer <robert.meyer@holcim.com> Fri, 08 Jun 2007 13:55:24 +0000 
+
+    Added changes in Schema.pm to get table created by myspam-install
+
+Commit: 7b05b317d9c4ec72fe2d8966b66be1bcae1c6eb8 
+Author: Robert Meyer <robert.meyer@holcim.com> Fri, 08 Jun 2007 12:43:58 +0000 
+
+    Added email interface for subscribe, subscribe2 and unsubscribe
+
+Commit: c7547039db0d48b7ea5762e283fb4d038e524482 
+Author: Mark Lawrence <nomad@null.net> Wed, 06 Jun 2007 15:34:48 +0000 
+
+    Whitelist support. Documentation not yet up to date.
+
+Commit: ca4464a6db2461fe2e15c303a34dd9461bdbbd13 
+Author: Mark Lawrence <nomad@null.net> Fri, 01 Jun 2007 10:41:02 +0000 
+
+    MANIFEST.SKIP Additions
+
+Commit: bc6fbe66a7705bfe383a3c704aab765cfbeb6c2f 
+Author: Mark Lawrence <nomad@null.net> Fri, 01 Jun 2007 10:37:49 +0000 
+
+    MANIFEST.SKIP additions
+
+Commit: 7516e8341c4359d8ed4518189add95859085274d 
+Author: Mark Lawrence <nomad@null.net> Fri, 01 Jun 2007 10:35:39 +0000 
+
+    Added vim tabstop/expandtab comands to all Perl files
+
+Commit: 47b52d5aba2af720fdd75e68f5f83bb7e2d73da0 
+Author: Mark Lawrence <nomad@null.net> Fri, 01 Jun 2007 10:34:07 +0000 
+
+    Moved to version 0.02. First fully git/cogito controlled release.
+
+Commit: 72ab4b4ad996240dca6dd7cb2df81d1e5c3ad386 
+Author: Mark Lawrence <nomad@null.net> Fri, 01 Jun 2007 10:24:40 +0000 
+
+    Added vim(1) edit commands (tabstop=4 etc) to all Perl files
+
+Commit: 096bc36339f94e2423b9fa8161bc349392d52d16 
+Author: Mark Lawrence <nomad@null.net> Fri, 01 Jun 2007 09:06:26 +0000 
+
+    Initial commit
+

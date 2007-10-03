@@ -1,0 +1,48 @@
+    body {
+        padding: 1em;
+        font:85% Verdana,Tahoma,Arial,sans-serif;
+    }
+    h1 {
+        font-size: 120%;
+    }
+    h2 {
+        font-size: 100%;
+    }
+    table#quarantine {
+        border: solid 1px #a0a0a0;
+        width: 100%;
+    }
+    .odd {
+    }
+    .even {
+    }
+    th {
+        text-align: left;
+        background: #cfcfcf;
+        white-space: nowrap;
+    }
+    th,td {
+        padding-left: 0.5em;
+        padding-right: 0.5em;
+        vertical-align: top;
+        border-bottom: solid 1px #d0d0d0;
+    }
+    td.date, td.released {
+        white-space: nowrap;
+    }
+    .num {
+        text-align: right;
+    }
+    td.whitelist_action {
+        width: 30%;
+    }
+    td.command {
+        font-weight: bold;
+        padding-bottom: 1em;
+    }
+    .error {
+        color: #dd0000;
+    }
+    .timing {
+        font-size: 80%;
+    }

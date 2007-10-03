@@ -1,0 +1,7 @@
+loadplugin Mail::SpamAssassin::Plugin::WhitelistDBM
+
+header          WHITELISTDBM_FROM_TO       eval:whitelistdbm_from_to()
+describe        WHITELISTDBM_FROM_TO       Whitelisted From/To Combination
+score           WHITELISTDBM_FROM_TO       -20.0
+
+whitelistdbm    /var/lib/myspam/whitelist.dbm

@@ -1,0 +1,9 @@
+myspam_transport:
+    driver            = pipe
+    command           = /usr/bin/myspam-smtp
+    user              = Debian-exim
+    group             = Debian-exim
+    return_fail_output = true
+#    max_output = 10000000000
+#    ignore_status     = true
+

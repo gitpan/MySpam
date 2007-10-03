@@ -1,0 +1,10 @@
+#
+# Recovery requests from users
+#
+myspam_router:
+    driver        = accept
+    domains       = +local_domains
+    require_files = /usr/bin/myspam-smtp
+    local_parts   = myspam
+    transport     = myspam_transport
+

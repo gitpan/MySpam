@@ -1,0 +1,9 @@
+build-stamp
+debian/files
+debian/myspam/.*
+debian/myspam-common/.*
+debian/myspam-server/.*
+debian/.*substvars
+install-stamp
+.*\.swp
+.git

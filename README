@@ -1,0 +1,54 @@
+myspam
+========
+
+myspam is a tool for managing mail that has been quarantined
+by sa-exim. It stores the quarantined mails in a database and
+has both a command-line and an email interface.
+
+For the quarantining process to work the SAmaxrcptlistlength configuration
+item in /etc/exim4/sa-exim.conf must be set to a value greater than 0.
+This makes sa-exim add the X-SA-Exim-Rcpt-To header which we need.
+
+This package also contains a Whitelist module for SpamAssassin, and the
+users can set their whitelist through the email interface.
+
+The myspam(1) manpage is probably a good place to start once you have
+this package installed.
+
+
+DEBIAN INSTALLATION
+
+Add the following to your /etc/apt/sources.list:
+
+    deb http://rekudos.net/ stable main
+
+and then do an "apt-get update; apt-get install myspam".
+
+
+OTHER INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test        # optional - will send mails to postmaster
+   make install
+
+
+The "make install" command puts files in /etc/exim4/conf.d/ so you will also
+want to run update-exim4.conf or update-exim4.conf.template to pick up
+those changes.
+
+You will probably want to copy the debian/myspam.cron.d file to somewhere
+in your cron(8) configuration directory.
+
+
+
+
+Copyright (C) 2006,2007 Mark Lawrence <nomad@null.net>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+

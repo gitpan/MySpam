@@ -1,0 +1,23 @@
+Source: myspam
+Section: perl
+Priority: optional
+Build-Depends: debhelper (>= 4.0.2), libdbd-sqlite3-perl
+Build-Depends-Indep: perl (>= 5.8.0-7), libdbd-sqlite3-perl
+Maintainer: Mark Lawrence <nomad@null.net>
+Standards-Version: 3.7.2
+
+Package: myspam
+Architecture: all
+Depends: ${perl:Depends}, ${misc:Depends}, libconfig-file-perl, libdbd-mysql-perl | libdbd-sqlite3-perl, libsql-db-perl (>= 0.06-3), libcompress-bzip2-perl, libemail-simple-perl, libmime-lite-perl, libxml-api-perl (>= 0.11-1), liblockfile-simple-perl, libfile-slurp-perl, libberkeleydb-perl, libmail-rfc822-address-perl
+Conflicts: myspam-server,myspam-common
+Replaces: myspam-server,myspam-common
+Description:  Managed SPAM mails quarantined by sa-exim
+ Takes mails blocked by sa-exim and stores them in a database from where
+ they can be queried or recovered by users. Has both command-line and
+ email based interfaces. Has a (bi)weekly reminder function.
+ .
+ For the quarantining process to work the SAmaxrcptlistlength configuration
+ item in /etc/exim4/sa-exim.conf must be set to a value greater than 0.
+ .
+ This package also contains a Whitelist module for SpamAssassin, and the
+ users can set their whitelist through the email interface.

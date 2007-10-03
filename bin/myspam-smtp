@@ -1,0 +1,139 @@
+#!/usr/bin/perl
+#!/usr/bin/speedy
+use strict;
+use warnings;
+BEGIN {
+    use File::Basename;
+    my $dir = dirname($0) .'/../lib';
+    unshift(@INC, $dir) if(-d $dir);
+}
+use Getopt::Std;
+use Email::Simple;
+use MySpam::Email;
+
+my %opts;
+getopt('c', \%opts);
+
+if (@ARGV) {
+    my $me = basename($0);
+    die "usage: $me [-c <config>] < EMAIL ";
+}
+
+
+# Inbound
+my $inbound;
+{
+    local($/);
+    $inbound = Email::Simple->new(<STDIN>);
+}
+
+(my $h_from    = lc($inbound->header('From'))) =~ s/(.*<)|(>.*)//g;
+(my $h_to      = lc($inbound->header('To')))   =~ s/(.*<)|(>.*)//g;
+(my $h_subject = lc($inbound->header('Subject')))  =~ s/(^\s+)|(\s+$)//g;
+
+
+# Outbound
+our $outbound = MySpam::Email->new($opts{c}) unless($outbound);
+$outbound->reset;
+$outbound->to($h_from);
+$outbound->from($h_to);
+$outbound->subject('Re: '. $h_subject);
+
+
+if ($h_subject !~ m/(^list$)|(^release:)|(^subscribe1$)|(^unsubscribe$)|(^subscribe2$)|(^whitelist)|(^unwhitelist:)/ or $h_subject eq 'help') {
+    $outbound->usage($h_subject);
+    $outbound->send;
+    exit 0;
+}
+
+if ($h_subject =~ /^list/) {
+    $outbound->list;
+}
+elsif ($h_subject =~ /^release:\s*(\d*)/) {
+    $outbound->release($1);
+}
+elsif ($h_subject =~ /^whitelist:\s*(.*)/) {
+    $outbound->whitelist($1);
+}
+elsif ($h_subject =~ /^unwhitelist:\s*(.*)/) {
+    $outbound->unwhitelist($1);
+}
+elsif ($h_subject =~ /^subscribe(\d)/) {
+    if ($1 > 0 and $1 < 3) {
+        $outbound->subscribe($1);
+    }
+    else {
+        $outbound->usage($h_subject);
+    }
+}
+elsif ($h_subject eq 'subscribe') {
+    $outbound->subscribe(1);
+}
+elsif ($h_subject =~ /^unsubscribe/) {
+    $outbound->unsubscribe;
+}
+else {
+    $outbound->usage($h_subject);
+}
+
+$outbound->send();
+exit 0;
+
+__END__
+
+
+=head1 NAME
+
+myspam-smtp - email interface to the MySpam database
+
+=head1 SYNOPSIS
+
+  myspam-smtp < EMAIL      # typically invoked by exim / MTA
+
+=head1 DESCRIPTION
+
+B<myspam-smtp> allows users to list and release the emails which
+have been stopped by sa-exim and stored by the MySpam application.
+This program is usually invoked by Exim or the MTA when a user sends
+a mail to myspam@your.domain.com.
+
+B<myspam-smtp> will always attempt to respond to the sender, and
+will CC: the 'admin' address defined in /etc/myspam/myspam.conf
+in the event of failure.
+
+The commands available to users are basically the same as the options
+for the L<myspam> command-line tool. Sending an empty Subject line to
+myspam@your.domain.com will produce a help message.
+
+If you have an extremely high level of requests then it is possible
+to run B<myspam-smtp> under L<SpeedyCGI> or some other persistent perl
+environment for much better performance.
+
+=head1 FILES
+
+/etc/myspam/myspam.conf - database connection information
+
+/etc/myspam/myspam.css - style definition for HTML email
+
+/var/log/mail.* - syslog(8) reporting of success or failure
+
+=head1 SEE ALSO
+
+L<myspam>, L<MySpam::Email>
+
+=head1 AUTHOR
+
+Mark Lawrence E<lt>nomad@null.netE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2007 Mark Lawrence E<lt>nomad@null.netE<gt>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+=cut
+
+# vim: set tabstop=4 expandtab:
