@@ -393,7 +393,7 @@ myspam - Command-line interface to the MySpam application
 
 =head1 SYNOPSIS
 
-  myspam [-c <config>] <command> [args]
+  myspam [-c <config>] <COMMAND> [args]
 
 =head1 DESCRIPTION
 
@@ -402,7 +402,7 @@ B<myspam> is the shell (administrative) interface to MySpam. Most users
 would only interact with MySpam using the email interface (see
 L<myspam-smtp> for details).
 
-<command> usually results in some kind of action in the MySpam database,
+<COMMAND> usually results in some kind of action in the MySpam database,
 or may result in emails being sent.
 
 =head2 -c config
@@ -416,8 +416,8 @@ Specify a configuration file other than the default /etc/myspam/myspam.conf.
 Prints the CREATE statements used to build the database tables and indexes.
 If the optional '--db' if given then the actions will actually be
 run against in the database. You only need to run this action once against
-the database. (Users of the Debian package don't need to do this at all -
-the database is created at installation time).
+the database. Users of the Debian package don't need to do this -
+the (SQLite) database is created automatically at installation time.
 
 =head2 quarantine <file>|<directory> [--rm]
 
@@ -426,7 +426,7 @@ is specified then the file(s) will be removed after successfully being
 inserted.
 
 The files to be imported must be in standard mbox format and must have
-a X-SA-Exim-Rcpt-To: header. This header is only added by sa-exim if
+a X-SA-Exim-Rcpt-To: header. NOTE: This header is only added by sa-exim if
 SAmaxrcptlistlength in /etc/exim4/sa-exim.conf is set to a positive value.
 
 =head2 expire
@@ -497,6 +497,39 @@ would receive a newsletter.
 
 This command would not normally be run by hand but called from a
 cron(8) job.
+
+=head1 CONFIGURATION FILE
+
+/etc/myspam/myspam.conf is the default configuration file. It should
+define the following keys, separated from the values by '='.
+
+=head2 dbi
+
+A standard L<DBI> database connection string such as
+dbi:SQLite:/var/lib/myspam/myspam.db.
+
+=head2 user
+
+Database user name.
+
+=head2 pass
+
+Database user password.
+
+=head2 admin
+
+The contact address for users with problems. Also gets Cc'd in the event
+of an error.
+
+=head2 expire
+
+The number of seconds which messages in the database can age before they
+are removed.
+
+=head2 whitelist
+
+The location of the DBM file for the SpamAssassin WhitelistDBM plugin.
+This must match with the /etc/spamassassin/whitelistdbm.cf config file.
 
 =head1 FILES
 

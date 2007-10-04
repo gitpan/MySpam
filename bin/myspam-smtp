@@ -40,7 +40,7 @@ $outbound->from($h_to);
 $outbound->subject('Re: '. $h_subject);
 
 
-if ($h_subject !~ m/(^list$)|(^release:)|(^subscribe1$)|(^unsubscribe$)|(^subscribe2$)|(^whitelist)|(^unwhitelist:)/ or $h_subject eq 'help') {
+if ($h_subject !~ m/(^list$)|(^release:)|(^subscribe$)|(^subscribe1$)|(^unsubscribe$)|(^subscribe2$)|(^whitelist)|(^unwhitelist:)/ or $h_subject eq 'help') {
     $outbound->usage($h_subject);
     $outbound->send;
     exit 0;
@@ -108,6 +108,9 @@ myspam@your.domain.com will produce a help message.
 If you have an extremely high level of requests then it is possible
 to run B<myspam-smtp> under L<SpeedyCGI> or some other persistent perl
 environment for much better performance.
+
+All actions undertaken by B<myspam-smtp> or its underlying modules
+are reported to the syslog(8).
 
 =head1 FILES
 

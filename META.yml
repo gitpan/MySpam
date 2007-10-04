@@ -1,4 +1,4 @@
-abstract: Database operations for the MySpam application
+abstract: Manage sa-exim quarantined SPAM
 author: Mark Lawrence <nomad@null.net>
 build_requires: 
   Test::More: 0.42
@@ -25,4 +25,4 @@ requires:
   Time::HiRes: 0
   XML::API::XHTML: 0.14
   perl: 5.0006
-version: 0.05
+version: 0.06

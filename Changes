@@ -1,5 +1,35 @@
-Commit: e2f6fdf48527337cce9f3681d448a1c0e19b0a1f 
-Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 23:20:13 +0200 
+Commit: af6b00d918d5ffbee493f6e5c3b9fc9b835c095e 
+Author: Mark Lawrence <nomad@null.net> Thu, 04 Oct 2007 17:59:13 +0200 
+
+    META.yml
+        Removed from git control.
+    
+    Makefile.PL
+        Set the abstract manually.
+    
+    README
+        Filled out to describe how the system works.
+    
+    bin/myspam
+        Added missing 'subscribe' regex to the Subject: parser.
+        Documented the format of /etc/myspam/myspam.conf
+    
+    debian/control
+        Depends on libsql-db-perl >= 0.06-4
+    
+    debian/myspam.postinst
+        Reload SpamAssassin on install.
+    
+    debian/myspam.postrm
+        Remove /var/lib/myspam/whitelist.dbm on purge.
+
+Commit: 71e942b8272180a6b506b568cb6e9237376b972b 
+Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 23:38:30 +0200 
+
+    Uploaded to CPAN as VERSION 0.05. v0.04 failed to index any modules...
+
+Commit: 3829096e6b4da8c31ccda72d961e426134f62101 
+Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 23:27:10 +0200 
 
     General
         New email 'help' command to list the usage.
@@ -16,6 +46,9 @@ Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 23:20:13 +0200
         'sudo'.
     
         Fixed the automatic DB installation to actually work now.
+    
+    CPAN
+        Uploaded as VERSION 0.04.
 
 Commit: 18d5fb8acd05d1158dbeac4be473085c61f23187 
 Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 22:12:44 +0200 

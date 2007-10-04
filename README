@@ -1,19 +1,33 @@
-myspam
-========
+MySpam
+=======
 
-myspam is a tool for managing mail that has been quarantined
-by sa-exim. It stores the quarantined mails in a database and
-has both a command-line and an email interface.
+MySpam is a tool for managing mail that has been quarantined
+by sa-exim. It works like this.
 
-For the quarantining process to work the SAmaxrcptlistlength configuration
-item in /etc/exim4/sa-exim.conf must be set to a value greater than 0.
-This makes sa-exim add the X-SA-Exim-Rcpt-To header which we need.
+1. Every five minutes cron(8) calls "myspam quarantine" on the
+/var/spool/sa-exim/SApermreject/new directory. This inserts the
+mails in that directory into a database. The mail files are then
+removed.
 
-This package also contains a Whitelist module for SpamAssassin, and the
-users can set their whitelist through the email interface.
+2. Users can send a mail to myspam@your.domain with various commands
+in the Subject header. The commands allow them to list their quarantined
+mails, to release mails, to add addresses to a whitelist, or to subscribe
+to a (bi-)weekly mail of their quarantine list.
 
-The myspam(1) manpage is probably a good place to start once you have
-this package installed.
+3. Every half hour cron(8) calls "myspam whitelist" to generate a DBM
+file which an included SpamAssassin plugin can use to decrease the scores
+of particular sender/recipient combinations at sa-exim time.
+
+4. Every evening cron(8) calls "myspam expire" to remove mails from the
+database that are older than one month.
+
+5. Once a week cron(8) calls "myspam newsletter" to send out to all
+subscribers users the list of their recently quarantined mails.
+
+Almost all options are controllable either through the
+/etc/myspam/myspam.conf configuration file, or by modifying the cron
+entries. Even the CSS for the html part of email responses can be
+customized.
 
 
 DEBIAN INSTALLATION
@@ -37,12 +51,19 @@ To install this module type the following:
 
 The "make install" command puts files in /etc/exim4/conf.d/ so you will also
 want to run update-exim4.conf or update-exim4.conf.template to pick up
-those changes.
+those changes, or manually integrate those files into your configuration.
+Copy the debian/myspam.cron.d file to somewhere in your cron(8)
+configuration directory. You will also probably have to restart
+SpamAssassin to pick up the WhitelistDBM.pm plugin.
 
-You will probably want to copy the debian/myspam.cron.d file to somewhere
-in your cron(8) configuration directory.
+For the quarantining process to work the SAmaxrcptlistlength configuration
+item in /etc/exim4/sa-exim.conf must be set to a value greater than 0.
+This makes sa-exim add the X-SA-Exim-Rcpt-To header which we need in order
+to know to whom the mail was to have been delivered.
 
 
+The myspam(1) manpage is probably a good place to start once you have
+this package installed.
 
 
 Copyright (C) 2006,2007 Mark Lawrence <nomad@null.net>

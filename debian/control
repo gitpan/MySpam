@@ -8,7 +8,7 @@ Standards-Version: 3.7.2
 
 Package: myspam
 Architecture: all
-Depends: ${perl:Depends}, ${misc:Depends}, libconfig-file-perl, libdbd-mysql-perl | libdbd-sqlite3-perl, libsql-db-perl (>= 0.06-3), libcompress-bzip2-perl, libemail-simple-perl, libmime-lite-perl, libxml-api-perl (>= 0.11-1), liblockfile-simple-perl, libfile-slurp-perl, libberkeleydb-perl, libmail-rfc822-address-perl
+Depends: ${perl:Depends}, ${misc:Depends}, libconfig-file-perl, libdbd-mysql-perl | libdbd-sqlite3-perl, libsql-db-perl (>= 0.06-4), libcompress-bzip2-perl, libemail-simple-perl, libmime-lite-perl, libxml-api-perl (>= 0.11-1), liblockfile-simple-perl, libfile-slurp-perl, libberkeleydb-perl, libmail-rfc822-address-perl
 Conflicts: myspam-server,myspam-common
 Replaces: myspam-server,myspam-common
 Description:  Managed SPAM mails quarantined by sa-exim

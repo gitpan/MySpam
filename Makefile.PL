@@ -1,6 +1,7 @@
 use inc::Module::Install;
 
 name            'MySpam';
+abstract        'Manage sa-exim quarantined SPAM';
 license         'GPL';
 all_from        'lib/MySpam.pm';
 

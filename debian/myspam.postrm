@@ -50,6 +50,7 @@ case "$1" in
             fi
         fi
 
+        rm -f /var/lib/myspam/whitelist.dbm
 
         ;;
 
