@@ -2,10 +2,11 @@ package MySpam;
 use 5.0006;
 use strict;
 use warnings;
+use Carp qw(croak);
 use Sys::Syslog;
 use File::Basename;
 use Config::File;
-use SQL::DB qw(max);
+use SQL::DB qw(define_tables max);
 use File::Slurp qw(slurp);
 use Email::Simple;
 use MIME::Lite;
@@ -13,14 +14,68 @@ use Mail::RFC822::Address qw(valid);
 use Compress::Bzip2 qw(memBzip memBunzip);
 use File::Temp qw(tempfile);
 use GDBM_File;
-use Carp qw(croak);
 
-our $VERSION = '0.06';
+
+our $VERSION = '0.07';
+
+
+define_tables(
+    [
+        table  => 'messages',
+        class  => 'Message',
+        column => [name => 'id',        type => 'INTEGER', primary => 1],
+        column => [name => 'epoch',     type => 'INTEGER'],
+        column => [name => 'sa_score',  type => 'FLOAT'],
+        column => [name => 'ip',        type => 'VARCHAR(32)'],
+        column => [name => 'mx_host',   type => 'VARCHAR(255)'],
+        column => [name => 'raw',       type => 'MEDIUMBLOB'],
+        type_mysql => 'InnoDB',
+        index  => 'epoch',
+    ],
+    [
+        table  => 'recipients',
+        class  => 'Recipient',
+        column => [name => 'id',        type => 'INTEGER', primary => 1],
+        column => [name => 'epoch',     type => 'INTEGER'],
+        column => [name => 'sender',    type => 'VARCHAR(255)'], # just email
+        column => [name => 'email',     type => 'VARCHAR(255)'], # just email
+        column => [name => 'h_from',    type => 'VARCHAR(255)'],
+        column => [name => 'h_subject', type => 'VARCHAR(1024)'],
+        column => [name => 'sa_score',  type => 'FLOAT'],
+        column => [name => 'released',  type => 'INTEGER', default => 0],
+        column => [name => 'message', type => 'INTEGER', ref => 'messages(id)'],
+        unique => 'email,message',
+        type_mysql => 'InnoDB',
+        index  => 'email',
+        index  => 'message',
+    ],
+    [
+        table  => 'whitelist',
+        class  => 'Whitelist',
+        column => [name => 'epoch',     type => 'INTEGER'],
+        column => [name => 'sender',    type => 'VARCHAR(255)'], # just email
+        column => [name => 'recipient', type => 'VARCHAR(255)'], # just email
+        unique => 'sender,recipient',
+        type_mysql => 'InnoDB',
+        index  => 'recipient',
+        index  => 'sender,recipient',
+    ],
+    [
+        table  => 'subscribers',
+        class  => 'Subscriber',
+        column => [name => 'subscriber', type => 'VARCHAR(255)', primary => 1],
+        column => [name => 'period',     type => 'INTEGER', default => 1],
+        column => [name => 'last_sent',  type => 'INTEGER', default => 0],
+        type_mysql => 'InnoDB',
+    ],
+);
+
 
 #
 # Open up a reporting channel
 #
 openlog(basename($0), 'pid,ndelay', 'mail');
+
 
 
 #
@@ -40,7 +95,7 @@ sub new {
     $self->{conf} = Config::File::read_config_file($self->{conffile});
     my $conf = $self->{conf};
 
-    my $db = SQL::DB->new(db_definition($conf->{dbi}));
+    my $db = SQL::DB->new();
 
     if (!eval{$db->connect($conf->{dbi}, $conf->{user}, $conf->{pass});1;}) {
         $self->error("Database: $@");
@@ -52,6 +107,12 @@ sub new {
     
     $self->{db} = $db;
     return $self;
+}
+
+
+sub _debug {
+    my $self = shift;
+    $self->{debug} = shift;
 }
 
 
@@ -70,7 +131,12 @@ sub log {
 sub error {
     my $self = shift;
     my $error = shift || '*undef* '. join(':',caller);
-    syslog('err', $error);
+    if ($self->{debug}) {
+        croak $error;
+    }
+    else {
+        syslog('err', $error);
+    }
 }
 
 
@@ -142,7 +208,7 @@ sub quarantine {
     }
 
     my $mid  = $self->{db}->seq('message');
-    my @rids = map {$self->{db}->seq('recipient')} @recipients;
+    my @rids = $self->{db}->seq('recipient', scalar @recipients);
 
     $self->{db}->dbh->begin_work;
 
@@ -192,7 +258,7 @@ sub get_quarantined_mails {
     my $fromwhen = shift || 0;
 
     my $recipients = $self->{db}->arow('recipients');
-    my @list = $self->{db}->fetcho(
+    my @list = $self->{db}->fetch(
         select  => [$recipients->_columns],
         from     => $recipients,
         where    => ($recipients->email == $email) &
@@ -203,38 +269,25 @@ sub get_quarantined_mails {
 }
 
 
-sub raw {
-    my $self  = shift;
-    my $email = shift || croak 'usage: raw($email,$id)';
-    my $id    = shift || croak 'usage: raw($email,$id)';
-    $email    = lc($email);
-
-    my $r = $self->{db}->arow('recipients');
-    my $m = $self->{db}->arow('messages');
-
-    my $recipient = $self->{db}->fetcho1(
-        select   => [$r, $m],
-        from      => $r,
-        left_join => $m,
-        on        => $r->message == $m->id,
-        where     => ($r->id == $id) & ($r->email == $email),
-    );
-
-    return unless ($recipient);
-    return ($recipient, memBunzip($recipient->message->raw));
-}
-
-
 sub release {
     my $self  = shift;
     my $email = shift || croak 'usage: release($email,$id)';
     my $id    = shift || croak 'usage: release($email,$id)';
     $email    = lc($email);
-    my ($recipient, $raw) = $self->raw($email,$id);
 
-    unless ($recipient and $raw) {
-        return;
-    }
+    my $recipients = $self->{db}->arow('recipients');
+    my $messages = $self->{db}->arow('messages');
+
+    my $recipient = $self->{db}->fetch1(
+        select   => [$recipients->_columns, $messages->raw],
+        from      => $recipients,
+        left_join => $messages,
+        on        => $recipients->message == $messages->id,
+        where     => ($recipients->id == $id) & ($recipients->email == $email),
+    );
+
+    my $raw;
+    return unless ($recipient and $raw = memBunzip($recipient->raw));
 
     if (!$self->sendmail($email, $raw)) {
         $self->log($recipient->sender . " ** $email");
@@ -368,12 +421,13 @@ sub get_whitelist {
     $recipient    = lc($recipient);
 
     my $r = $self->{db}->arow('whitelist');
-    return $self->{db}->fetcho(
+    my @list = $self->{db}->fetch(
         select  => [$r->_columns],
         from     => $r,
         where    => $r->recipient == $recipient,
         order_by => $r->sender,
     );
+    return @list;
 }
 
 
@@ -381,7 +435,7 @@ sub get_whitelist_all {
     my $self      = shift;
 
     my $r = $self->{db}->arow('whitelist');
-    return $self->{db}->fetcho(
+    return $self->{db}->fetch(
         select  => [$r->_columns],
         from     => $r,
         order_by => $r->sender,
@@ -430,7 +484,7 @@ sub subscribe {
     # First of all check if this already exists
     my $s = $self->{db}->arow('subscribers');
 
-    my ($item) = $self->{db}->fetcho(
+    my ($item) = $self->{db}->fetch(
         select => [$s->_columns],
         from   => $s,
         where  => $s->subscriber == $email,
@@ -466,7 +520,7 @@ sub get_subscriber {
     $email    = lc($email);
 
     my $r = $self->{db}->arow('subscribers');
-    return $self->{db}->fetcho1(
+    return $self->{db}->fetch1(
         select => [$r->_columns],
         from   => $r,
         where  => $r->subscriber == $email,
@@ -479,11 +533,12 @@ sub get_subscribers {
     my $period = shift || die 'usage: get_subscribers($period)';
 
     my $r = $self->{db}->arow('subscribers');
-    return $self->{db}->fetcho(
+    my @list = $self->{db}->fetch(
         select  => [$r->_columns],
         from     => $r,
         where    => $r->period == $period,
     );
+    return @list;
 }
 
 
@@ -509,7 +564,7 @@ sub subscriber_newsletter_list {
     my $biweek = $now - 60*60*24*13;
 
     my $subscribers = $self->{db}->arow('subscribers');
-    my @list = $self->{db}->fetcho(
+    my @list = $self->{db}->fetch(
         select => [$subscribers],
         from   => $subscribers,
         where  => (($subscribers->period == 1) &
@@ -565,66 +620,6 @@ sub expire {
     $self->log("Expired $mm messages $rr recipients");
     return ($rr,$mm);
 }
-
-
-sub db_definition {
-    my $dbi   = shift || croak 'usage: definition($dbi)';
-    my $mysql = ($dbi =~ m/mysql/i);
-
-    return 
-    [
-        table  => 'messages',
-        class  => 'Message',
-        column => [name => 'id',        type => 'INTEGER', primary => 1],
-        column => [name => 'epoch',     type => 'INTEGER'],
-        column => [name => 'sa_score',  type => 'FLOAT'],
-        column => [name => 'ip',        type => 'VARCHAR(32)'],
-        column => [name => 'mx_host',   type => 'VARCHAR(255)'],
-        column => [name => 'raw',       type => 'MEDIUMBLOB'],
-        ($mysql ? (type   => 'InnoDB') : ()),
-        index  => 'epoch',
-    ],
-    [
-        table  => 'recipients',
-        class  => 'Recipient',
-        column => [name => 'id',        type => 'INTEGER', primary => 1],
-        column => [name => 'epoch',     type => 'INTEGER'],
-        column => [name => 'sender',    type => 'VARCHAR(255)'], # just email
-        column => [name => 'email',     type => 'VARCHAR(255)'], # just email
-        column => [name => 'h_from',    type => 'VARCHAR(255)'],
-        column => [name => 'h_subject', type => 'VARCHAR(1024)'],
-        column => [name => 'sa_score',  type => 'FLOAT'],
-        column => [name => 'released',  type => 'INTEGER', default => 0],
-        column => [name => 'message',   type => 'INTEGER', ref => 'messages(id)'],
-        unique => 'email,message',
-        ($mysql ? (type   => 'InnoDB') : ()),
-        index  => 'email',
-#        index  => 'id,email',
-        index  => 'message',
-    ],
-    [
-        table  => 'whitelist',
-        class  => 'Whitelist',
-        column => [name => 'epoch',     type => 'INTEGER'],
-        column => [name => 'sender',    type => 'VARCHAR(255)'], # just email
-        column => [name => 'recipient', type => 'VARCHAR(255)'], # just email
-        unique => 'sender,recipient',
-        ($mysql ? (type   => 'InnoDB') : ()),
-        index  => 'recipient',
-        index  => 'sender,recipient',
-    ],
-    [
-        table  => 'subscribers',
-        class  => 'Subscriber',
-        column => [name => 'subscriber', type => 'VARCHAR(255)', primary => 1],
-        column => [name => 'period',     type => 'INTEGER', default => 1],
-        column => [name => 'last_sent',  type => 'INTEGER', default => 0],
-        ($mysql ? (type   => 'InnoDB') : ()),
-    ],
-    ;
-}
-
-#print join(";\n", map {$_,$_->sql_index} schema(0)->tables) . ";\n";
 
 
 1;

@@ -7,7 +7,7 @@ use DB_File;
 use Fcntl;
 use GDBM_File;
 
-our $VERSION = "0.06";
+our $VERSION = "0.07";
 our @ISA = qw(Mail::SpamAssassin::Plugin);
 
 

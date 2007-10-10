@@ -15,6 +15,8 @@ use MySpam;
 use MIME::Lite;
 use HTML::Entities;
 
+our $VERSION = '0.07';
+
 
 sub new {
     my $proto = shift;
@@ -149,9 +151,38 @@ sub error {
 }
 
 
+sub list_whitelist {
+    my $self = shift;
+    $self->{to} || croak 'must set to() before calling list_whitelist';
+    return unless($self->connect());
+
+
+    my $x = $self->{xbody};
+
+    $self->{body} .= "Current Whitelist\n";
+    $x->h2("Current Whitelist");
+    $x->p_open;
+
+    my @wl = $self->{myspam}->get_whitelist($self->{to});
+    foreach my $w (@wl) {
+        $self->{body} .= ' '. $w->sender . "\n";
+        $x->_add($w->sender);
+        $x->br;
+    }
+    if (!@wl) {
+        $self->{body} .= " None\n\n";
+        $x->_add('None');
+    }
+    $x->p_close;
+
+    return 1;
+}
+
+
 sub list {
     my $self     = shift;
     my $fromwhen = shift || 0;
+    $self->{to} || croak 'must set to() before calling list';
     return unless($self->connect());
 
     my @recipients =
@@ -587,6 +618,11 @@ Generates a general help/usage statement.
 
 Adds the text $msg to the body and includes the 'admin' address in the
 Cc: header.
+
+=head2 list_whitelist()
+
+Lists the current whitelist for the address $to (set by
+the to() method). Croaks if to() has not already been called.
 
 =head2 list()
 

@@ -15,7 +15,7 @@ requires        'Mail::RFC822::Address' => 0;
 requires        'MIME::Lite'         => 0;
 requires        'XML::API::XHTML'    => 0.14;
 requires        'File::Slurp'        => 0;
-requires        'SQL::DB'            => 0.06;
+requires        'SQL::DB'            => 0.08;
 requires        'MIME::Base64'       => 0;
 requires        'Compress::Bzip2'    => 0;
 

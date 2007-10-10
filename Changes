@@ -1,3 +1,37 @@
+Commit: 094ad57b90e2c6afc0051a2d21f7c17326e91628 
+Author: Robert Meyer <r.meyer@net-wizard.org> Wed, 10 Oct 2007 18:51:04 +0200 
+
+    MySpam::Email, bin/myspam-smtp
+        Implement missing 'whitelist' command.
+
+Commit: c6479e57c5df9ffc9ab191a165855357dc9c4a3d 
+Author: Mark Lawrence <nomad@null.net> Wed, 10 Oct 2007 18:08:02 +0200 
+
+    MySpam
+        Force things to 'croak' under test instead of just sending messages to
+        the syslog. This should produce more informative reports from the CPAN
+        testers.
+
+Commit: eec63327fc9f40b29cbbc69c8f7fdcb25a74b450 
+Author: Mark Lawrence <nomad@null.net> Wed, 10 Oct 2007 17:57:53 +0200 
+
+    Makefile.PL, debian/control
+        Upgrade dependency on SQL::DB 0.08 and libsql-db-perl 0.08-1.
+    
+    MySpam
+        Migrated to the new api of SQL::DB v0.08. This allowed us to get rid of
+        the hack for setting the MySQL engine type. Should also be a
+        performance improvement during quarantine since we can now get the list
+        of recipient IDs in one call.
+    
+        (Re)moved the raw() method into release() as it relied on the old
+        SQL::DB::fetcho() call and was anyway only used internally.
+
+Commit: 55353d9ed64552a39461832de4cde25f28a78f8c 
+Author: Mark Lawrence <nomad@null.net> Thu, 04 Oct 2007 18:36:51 +0200 
+
+    Uploaded to CPAN as v0.06.
+
 Commit: af6b00d918d5ffbee493f6e5c3b9fc9b835c095e 
 Author: Mark Lawrence <nomad@null.net> Thu, 04 Oct 2007 17:59:13 +0200 
 
