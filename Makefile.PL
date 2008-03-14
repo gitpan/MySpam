@@ -1,11 +1,12 @@
 use inc::Module::Install;
 
-name            'MySpam';
-abstract        'Manage sa-exim quarantined SPAM';
 license         'GPL';
+name            'MySpam';
 all_from        'lib/MySpam.pm';
+abstract        'Manage SPAM mail quarantined by sa-exim';
 
 build_requires  'Test::More'         => '0.42';
+build_requires  'DBD::SQLite'        => 0; # for tests
 
 requires        'Time::HiRes'        => 0;
 requires        'LockFile::Simple'   => 0;
@@ -13,13 +14,13 @@ requires        'Config::File'       => 0;
 requires        'Email::Simple'      => 0;
 requires        'Mail::RFC822::Address' => 0;
 requires        'MIME::Lite'         => 0;
-requires        'XML::API::XHTML'    => 0.14;
+requires        'XML::API::XHTML'    => 0.17;
 requires        'File::Slurp'        => 0;
 requires        'SQL::DB'            => 0.08;
 requires        'MIME::Base64'       => 0;
 requires        'Compress::Bzip2'    => 0;
+requires        'GDBM_File'          => 0;
 
-recommends      'DBD::SQLite'        => 0; # for tests
 
 install_script  'bin/myspam';
 install_script  'bin/myspam-smtp';

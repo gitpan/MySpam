@@ -1,6 +1,7 @@
-abstract: Manage sa-exim quarantined SPAM
+abstract: Manage SPAM mail quarantined by sa-exim
 author: Mark Lawrence <nomad@null.net>
 build_requires: 
+  DBD::SQLite: 0
   Test::More: 0.42
 distribution_type: module
 generated_by: Module::Install version 0.64
@@ -10,19 +11,18 @@ no_index:
   directory: 
     - inc
     - t
-recommends: 
-  DBD::SQLite: 0
 requires: 
   Compress::Bzip2: 0
   Config::File: 0
   Email::Simple: 0
   File::Slurp: 0
+  GDBM_File: 0
   LockFile::Simple: 0
   MIME::Base64: 0
   MIME::Lite: 0
   Mail::RFC822::Address: 0
   SQL::DB: 0.08
   Time::HiRes: 0
-  XML::API::XHTML: 0.14
+  XML::API::XHTML: 0.17
   perl: 5.0006
-version: 0.07
+version: 0.08

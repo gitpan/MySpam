@@ -13,10 +13,11 @@ use MIME::Lite;
 use Mail::RFC822::Address qw(valid);
 use Compress::Bzip2 qw(memBzip memBunzip);
 use File::Temp qw(tempfile);
+use File::Copy;
 use GDBM_File;
 
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 
 define_tables(
@@ -460,8 +461,8 @@ sub generate_whitelist_dbm {
 
     untie %entries;
 
-    if (!rename($tempfile, $file)) {
-        $self->error("rename($tempfile,$file): $!");
+    if (!move($tempfile, $file)) {
+        $self->error("move($tempfile,$file): $!");
         return;
     }
 

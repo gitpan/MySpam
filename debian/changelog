@@ -1,3 +1,9 @@
+myspam (0.08-01) stable; urgency=low
+
+  * New Upstream.
+
+ -- Mark Lawrence <nomad@null.net>  Fri, 14 Mar 2008 09:02:19 +0100
+
 myspam (0.07-01) stable; urgency=low
 
   * New upstream.
