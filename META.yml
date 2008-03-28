@@ -21,8 +21,8 @@ requires:
   MIME::Base64: 0
   MIME::Lite: 0
   Mail::RFC822::Address: 0
-  SQL::DB: 0.08
+  SQL::DB: 0.13
   Time::HiRes: 0
   XML::API::XHTML: 0.17
   perl: 5.0006
-version: 0.08
+version: 0.09

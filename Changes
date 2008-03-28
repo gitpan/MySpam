@@ -1,8 +1,39 @@
-Commit: 094ad57b90e2c6afc0051a2d21f7c17326e91628 
-Author: Robert Meyer <r.meyer@net-wizard.org> Wed, 10 Oct 2007 18:51:04 +0200 
+Commit: 92d55e2247d38a3525e092a2cb7c08cd33764ccb 
+Author: Mark Lawrence <nomad@null.net> Fri, 28 Mar 2008 15:41:01 +0100 
+
+    MySpam
+        Replace previous manual transaction (during insert) with the SQL::DB
+        txn() method.
+    
+    Makefile.PL, debian/control
+        Require SQL::DB v0.13.
+    
+    CPAN
+        Uploaded as v0.09.
+
+Commit: f490fab98be062d979ec411c951dc15a48c7815f 
+Author: Mark Lawrence <nomad@null.net> Fri, 14 Mar 2008 09:03:48 +0100 
+
+    Makefile.PL, debian/control
+        Requires XML::API version 0.17.
+        Requires GDBM_File
+        Build Requires DBD::SQLite
+    
+    MySpam
+        Use 'File::Copy::move' instead of 'rename' to copy whitelist file so
+        that it works across filesystems.
+    
+    CPAN
+        Uploaded as v0.08.
+
+Commit: ad5c8e3d6604355079b1674e8c4021977e794594 
+Author: Robert Meyer <r.meyer@net-wizard.org> Wed, 10 Oct 2007 18:53:08 +0200 
 
     MySpam::Email, bin/myspam-smtp
         Implement missing 'whitelist' command.
+    
+    CPAN
+        Uploaded as v0.07.
 
 Commit: c6479e57c5df9ffc9ab191a165855357dc9c4a3d 
 Author: Mark Lawrence <nomad@null.net> Wed, 10 Oct 2007 18:08:02 +0200 

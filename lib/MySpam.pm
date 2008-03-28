@@ -17,7 +17,7 @@ use File::Copy;
 use GDBM_File;
 
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 
 define_tables(
@@ -103,9 +103,6 @@ sub new {
         return;
     }
 
-#    $db->dbh->{AutoCommit} = 0;  # enable transactions, if possible
-    $db->dbh->{RaiseError} = 1;
-    
     $self->{db} = $db;
     return $self;
 }
@@ -208,12 +205,11 @@ sub quarantine {
         $mx_host = $1;
     }
 
-    my $mid  = $self->{db}->seq('message');
-    my @rids = $self->{db}->seq('recipient', scalar @recipients);
+    
+    my $res = $self->{db}->txn(sub{
+        my $mid  = $self->{db}->seq('message');
+        my @rids = $self->{db}->seq('recipient', scalar @recipients);
 
-    $self->{db}->dbh->begin_work;
-
-    eval {
         my $message = Message->new({
             id            => $mid,
             epoch         => $epoch,
@@ -238,18 +234,15 @@ sub quarantine {
             });
             $self->{db}->insert($recipient);
         }
-    };
+    });
 
-    if ($@) {
-        $self->error($@);
-        eval {$self->{db}->dbh->rollback;};
+    unless ($res) {
+        $self->error($res);
         return;
     }
 
-    $self->{db}->dbh->commit;
     $self->log("$from => QUARANTINE(@recipients)");
     return 1;
-
 }
 
 

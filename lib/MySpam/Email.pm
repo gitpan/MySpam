@@ -15,7 +15,7 @@ use MySpam;
 use MIME::Lite;
 use HTML::Entities;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 
 sub new {
