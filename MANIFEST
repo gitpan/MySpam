@@ -21,7 +21,6 @@ inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 inc/Module/Install/AutoInstall.pm
 inc/Module/Install/Makefile.pm
-inc/Module/Install/Scripts.pm
 inc/Module/Install/Fetch.pm
 inc/Module/Install/Include.pm
 inc/Module/Install/Metadata.pm

@@ -6,7 +6,7 @@ all_from        'lib/MySpam.pm';
 abstract        'Manage SPAM mail quarantined by sa-exim';
 
 build_requires  'Test::More'         => '0.42';
-build_requires  'DBD::SQLite'        => 0; # for tests
+build_requires  'DBD::SQLite'        => '1.14'; # for tests
 
 requires        'Time::HiRes'        => 0;
 requires        'LockFile::Simple'   => 0;
@@ -14,9 +14,9 @@ requires        'Config::File'       => 0;
 requires        'Email::Simple'      => 0;
 requires        'Mail::RFC822::Address' => 0;
 requires        'MIME::Lite'         => 0;
-requires        'XML::API::XHTML'    => 0.17;
+requires        'XML::API::XHTML'    => 0.24;
 requires        'File::Slurp'        => 0;
-requires        'SQL::DB'            => 0.13;
+requires        'SQL::DB'            => 0.16;
 requires        'MIME::Base64'       => 0;
 requires        'Compress::Bzip2'    => 0;
 requires        'GDBM_File'          => 0;
@@ -46,7 +46,6 @@ TRANSPORT = \$(TRANSPORT_DIR)/40-myspam_transport
 
 etc:
 	-mkdir -p \$(VARLIB)
-	-touch \$(VARLIB)/myspam.db
 
 	-mkdir -p \$(CONF_DIR)/myspam
 	-mkdir -p \$(CONF_DIR)/spamassassin

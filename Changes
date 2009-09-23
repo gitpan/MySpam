@@ -1,5 +1,217 @@
-Commit: 92d55e2247d38a3525e092a2cb7c08cd33764ccb 
-Author: Mark Lawrence <nomad@null.net> Fri, 28 Mar 2008 15:41:01 +0100 
+commit 5b4cdce104284a2357c7f5262b8d1f6ad499ac1b
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 23 13:46:00 2009 +0200
+
+    CPAN: Uploaded as version 0.10.
+
+commit 7a4deb7c0c382a50b42e97aad6b6c678a98274da
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 23 13:43:38 2009 +0200
+
+    Enable whitelisting of whole domains. Eg: "whitelist: *@my.domain"
+
+commit 7b5f4456cd619a4d96da66fe56db649dff424142
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 23 13:40:18 2009 +0200
+
+    myspam: Set from/subject 'Unknown' on Encode failure in list()
+
+commit 69b6cfc818b06bac8893db435d32c225c98157e0
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Sep 18 12:14:15 2009 +0200
+
+    MySpam: release matching mails in quarantine when whitelisting.
+
+commit a09c13593ad55acda0ecd15bafd75b4ec9f41d66
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Sep 18 11:59:12 2009 +0200
+
+    MySpam::Email: Add automatic (un)whitelist links to HTML attachement.
+
+commit 78fb0a1a5b72d229828f4f099e9cdb942e343734
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Sep 18 11:42:56 2009 +0200
+
+    MySpam::Email: Re-use listwhitelist() method inside list()
+    
+    The list() method was duplicating listwhitelist() unecessarily.
+
+commit 50a4bdd36fa64c735fb4d1150a8b30c4f58e0b66
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Sep 18 11:30:32 2009 +0200
+
+    Use the ISO 8601 standard for date & time formatting.
+
+commit 3a54377ccffc8a38014845141f785d4f34fe50d6
+Author: Mark Lawrence <nomad@null.net>
+Date:   Sat Sep 12 10:44:03 2009 +0200
+
+    MySpam::Email: Textual/English cleanups.
+
+commit 1823d45fff7feb047f47c5f0fbde37f944a51abc
+Author: Mark Lawrence <nomad@null.net>
+Date:   Sat Sep 12 10:43:24 2009 +0200
+
+    myspam: wrap Encode::decode in eval to catch decoding errors.
+
+commit 1d4976c55ec309ac5442241b0612917e8109c1a1
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 9 13:49:07 2009 +0200
+
+    debian/myspam.postinst: Only stat sqlite database if it exists.
+
+commit 136cb69aff31a5ea9ce81e26eef9ba6788f0e916
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 9 13:45:58 2009 +0200
+
+    Various newsletter/subscription cleanups.
+
+commit f47e48c44d0457e1c36a1d6fd7155b6bcd47bb69
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 9 12:50:28 2009 +0200
+
+    debian/control: Remove bogus libfile-basename-perl dependency.
+
+commit f79e36432bfa920897fd419e7c0ec90051992e2b
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 9 10:56:41 2009 +0200
+
+    MySpam::Email: Include the date in listwhitelist output.
+
+commit 1dd64a12976e5829acb6349943f1399404d12c2a
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 9 10:37:01 2009 +0200
+
+    myspam-smtp: Ignore "out of office" or "mail delivery failed" messages.
+
+commit 88b01ef3115d417071f70f47fdfd75eaadc0a6ce
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 9 10:34:28 2009 +0200
+
+    Newsletter subscription by any number of days.
+    
+    subscribe<days> now subscribes to a newsletters sent <days> apart.
+
+commit 95e4feaccedcd891b9674adef8450c0c2707f223
+Author: Mark Lawrence <nomad@null.net>
+Date:   Tue Sep 8 08:29:33 2009 +0200
+
+    Updated copyright dates.
+
+commit 9ca10b4f0691b155f25b3ce6a456293e36f30936
+Author: Mark Lawrence <nomad@null.net>
+Date:   Tue Sep 8 08:22:53 2009 +0200
+
+    New feature: Enable command-line deletion of quarantined mails.
+    
+    MySpam: New subroutine 'remove($email,$id)'.
+    myspam: New command 'delete' based on MySpam::remove.
+
+commit bb969c72605cf6ab6107e6be87c7d4721dc045b4
+Author: Mark Lawrence <nomad@null.net>
+Date:   Mon Sep 7 17:46:54 2009 +0200
+
+    myspam: Make 'whitelist' command accept a recipient.
+    
+    Now also prints out the date of each whitelist entry.
+
+commit 749accf2db8337156839150a48e760d30aba4d97
+Author: Mark Lawrence <nomad@null.net>
+Date:   Mon Sep 7 15:43:04 2009 +0200
+
+    SA WhitelistDBM Plugin: lowercase entire lookup key.
+
+commit 5ecb74b910191ee80357da51c7399036d98b510f
+Author: Mark Lawrence <nomad@null.net>
+Date:   Mon Sep 7 14:46:36 2009 +0200
+
+    MySpam: remove Perl version requirement.
+    
+    Better not to claim a requirement I'm not sure is necessary.
+
+commit 801be8c27a42bc530ec9bb166322e018b0dbeed6
+Author: Mark Lawrence <nomad@null.net>
+Date:   Mon Sep 7 14:31:34 2009 +0200
+
+    Catch MIME-Header decoding errors in MySpam and MySpam::Email.
+    
+    A better long-term solution would be to decode the headers before
+    inserting them as values in the recipients table. However, that would
+    mean that we deal with all data as UTF8, and requires a migration plan
+    to update existing rows during an upgrade.
+
+commit 17edfcd423c2165ea6c9f1ab3f21ee53f2a1b6e7
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 2 16:11:19 2009 +0200
+
+    conf/whitelistdbm.cf: Add a priority value of -10 to make it run early.
+
+commit 03468db319dc0bb131922393a7cd60bf56eb6657
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 2 15:32:18 2009 +0200
+
+    New Dependencies: DBD::SQLite 1.14, XML::API 0.24, SQL::DB 0.16
+
+commit 87bcca14bfbdde242003e57b5445a1e8bafc4d5d
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 2 15:19:03 2009 +0200
+
+    Makefile.PL: Do NOT create empty myspam.db file!
+    
+    If this is included in a debian package, and not listed as a config
+    file then it will OVERWRITE any existing database.
+
+commit 46252de5609bc286bc55b7bdd631cd4570160ac2
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 2 15:17:36 2009 +0200
+
+    t/02-MySpam-Email.t: Only send test email if running on my laptop.
+
+commit 75bcb69da4547044bb840d94781717e9f97b3778
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 2 15:03:03 2009 +0200
+
+    t/01-MySpam.t: Don't need to check if DBD::SQLite installed.
+
+commit 53f166712be63c624abae126958c6c1d890c65a4
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 2 15:00:48 2009 +0200
+
+    MySpam: Improve $sender & $recip address cleanups.
+
+commit d7897f45b3b45b97891701e7e00d4c52e0008e1b
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 2 14:59:51 2009 +0200
+
+    MySpam.pm: Implement missing raw() method.
+
+commit 9b271d3eea7d43167ba782e6fcd2d8e9a861562b
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 2 14:58:37 2009 +0200
+
+    debian/rules: Test before rm'ing $(TMP)/usr/lib/perl5.
+
+commit bcf6d25d19011c60a795bcab11ee383f4147fd48
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 2 14:54:24 2009 +0200
+
+    WhitelistDBM: Use Mail::RFC822::Address to verify email addresses.
+
+commit 1a0bd039053f4fddb9555bcd6708056124830086
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 2 14:38:57 2009 +0200
+
+    myspam-smtp: Assume a 'list' command when Subject: is empty.
+
+commit d6a9d4d791dedeea1cc59be1b39904e2b0822c66
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 2 14:34:31 2009 +0200
+
+    myspam: Decode MIME-encoded headers on output.
+
+commit 92d55e2247d38a3525e092a2cb7c08cd33764ccb
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Mar 28 15:41:01 2008 +0100
 
     MySpam
         Replace previous manual transaction (during insert) with the SQL::DB
@@ -11,8 +223,9 @@ Author: Mark Lawrence <nomad@null.net> Fri, 28 Mar 2008 15:41:01 +0100
     CPAN
         Uploaded as v0.09.
 
-Commit: f490fab98be062d979ec411c951dc15a48c7815f 
-Author: Mark Lawrence <nomad@null.net> Fri, 14 Mar 2008 09:03:48 +0100 
+commit f490fab98be062d979ec411c951dc15a48c7815f
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Mar 14 09:03:48 2008 +0100
 
     Makefile.PL, debian/control
         Requires XML::API version 0.17.
@@ -26,8 +239,9 @@ Author: Mark Lawrence <nomad@null.net> Fri, 14 Mar 2008 09:03:48 +0100
     CPAN
         Uploaded as v0.08.
 
-Commit: ad5c8e3d6604355079b1674e8c4021977e794594 
-Author: Robert Meyer <r.meyer@net-wizard.org> Wed, 10 Oct 2007 18:53:08 +0200 
+commit ad5c8e3d6604355079b1674e8c4021977e794594
+Author: Robert Meyer <r.meyer@net-wizard.org>
+Date:   Wed Oct 10 18:53:08 2007 +0200
 
     MySpam::Email, bin/myspam-smtp
         Implement missing 'whitelist' command.
@@ -35,16 +249,18 @@ Author: Robert Meyer <r.meyer@net-wizard.org> Wed, 10 Oct 2007 18:53:08 +0200
     CPAN
         Uploaded as v0.07.
 
-Commit: c6479e57c5df9ffc9ab191a165855357dc9c4a3d 
-Author: Mark Lawrence <nomad@null.net> Wed, 10 Oct 2007 18:08:02 +0200 
+commit c6479e57c5df9ffc9ab191a165855357dc9c4a3d
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Oct 10 18:08:02 2007 +0200
 
     MySpam
         Force things to 'croak' under test instead of just sending messages to
         the syslog. This should produce more informative reports from the CPAN
         testers.
 
-Commit: eec63327fc9f40b29cbbc69c8f7fdcb25a74b450 
-Author: Mark Lawrence <nomad@null.net> Wed, 10 Oct 2007 17:57:53 +0200 
+commit eec63327fc9f40b29cbbc69c8f7fdcb25a74b450
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Oct 10 17:57:53 2007 +0200
 
     Makefile.PL, debian/control
         Upgrade dependency on SQL::DB 0.08 and libsql-db-perl 0.08-1.
@@ -58,13 +274,15 @@ Author: Mark Lawrence <nomad@null.net> Wed, 10 Oct 2007 17:57:53 +0200
         (Re)moved the raw() method into release() as it relied on the old
         SQL::DB::fetcho() call and was anyway only used internally.
 
-Commit: 55353d9ed64552a39461832de4cde25f28a78f8c 
-Author: Mark Lawrence <nomad@null.net> Thu, 04 Oct 2007 18:36:51 +0200 
+commit 55353d9ed64552a39461832de4cde25f28a78f8c
+Author: Mark Lawrence <nomad@null.net>
+Date:   Thu Oct 4 18:36:51 2007 +0200
 
     Uploaded to CPAN as v0.06.
 
-Commit: af6b00d918d5ffbee493f6e5c3b9fc9b835c095e 
-Author: Mark Lawrence <nomad@null.net> Thu, 04 Oct 2007 17:59:13 +0200 
+commit af6b00d918d5ffbee493f6e5c3b9fc9b835c095e
+Author: Mark Lawrence <nomad@null.net>
+Date:   Thu Oct 4 17:59:13 2007 +0200
 
     META.yml
         Removed from git control.
@@ -88,13 +306,15 @@ Author: Mark Lawrence <nomad@null.net> Thu, 04 Oct 2007 17:59:13 +0200
     debian/myspam.postrm
         Remove /var/lib/myspam/whitelist.dbm on purge.
 
-Commit: 71e942b8272180a6b506b568cb6e9237376b972b 
-Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 23:38:30 +0200 
+commit 71e942b8272180a6b506b568cb6e9237376b972b
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Oct 3 23:38:30 2007 +0200
 
     Uploaded to CPAN as VERSION 0.05. v0.04 failed to index any modules...
 
-Commit: 3829096e6b4da8c31ccda72d961e426134f62101 
-Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 23:27:10 +0200 
+commit 3829096e6b4da8c31ccda72d961e426134f62101
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Oct 3 23:27:10 2007 +0200
 
     General
         New email 'help' command to list the usage.
@@ -115,8 +335,9 @@ Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 23:27:10 +0200
     CPAN
         Uploaded as VERSION 0.04.
 
-Commit: 18d5fb8acd05d1158dbeac4be473085c61f23187 
-Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 22:12:44 +0200 
+commit 18d5fb8acd05d1158dbeac4be473085c61f23187
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Oct 3 22:12:44 2007 +0200
 
     README
         Better description. Mentioned requirement for SAmaxrcptlistlength
@@ -152,15 +373,17 @@ Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 22:12:44 +0200
         Extra $epoch arguments to get_quarantine_mails() and list() in support
         of the 'newsletter' functionality.
 
-Commit: 7c3eb32400739fbc2d43d7ec5f3a864703dca727 
-Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 17:58:19 +0200 
+commit 7c3eb32400739fbc2d43d7ec5f3a864703dca727
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Oct 3 17:58:19 2007 +0200
 
     bin/myspam
         Subscription is now done with 'subscribe' and 'subscribe2' to more
         closely match the email interface commands.
 
-Commit: ee039e0978c7007e9907c87a691d7badf6cc60f2 
-Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 17:48:05 +0200 
+commit ee039e0978c7007e9907c87a691d7badf6cc60f2
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Oct 3 17:48:05 2007 +0200
 
     lib/MySpam.pm, lib/MySpam/Email.pm
         Now validate whitelist addresses using Mail::RFC822::Address.
@@ -172,8 +395,9 @@ Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 17:48:05 +0200
     t/*
         Test for the above checks.
 
-Commit: 580616d56746410607270f0b6dc3a78e9acc9746 
-Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 17:30:22 +0200 
+commit 580616d56746410607270f0b6dc3a78e9acc9746
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Oct 3 17:30:22 2007 +0200
 
     General
         Almost completed documentation for everything.
@@ -199,8 +423,9 @@ Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 17:30:22 +0200
     debian/myspam.cron.d
         Now complete with 'expire', 'newsletter' and comments.
 
-Commit: 18036523fdc94c982235b5dc208baacd4c198b48 
-Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 12:12:27 +0200 
+commit 18036523fdc94c982235b5dc208baacd4c198b48
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Oct 3 12:12:27 2007 +0200
 
     Fixes from Robert Meyer <r.meyer@net-wizard.org>:
     
@@ -216,8 +441,9 @@ Author: Mark Lawrence <nomad@null.net> Wed, 03 Oct 2007 12:12:27 +0200
             * InnoDB definition for MySQL now works
             * Make whitelist.dbm file world readable after generation.
 
-Commit: 4e07ecec84de6c0b115a36d5f115dac9c9f76c07 
-Author: Mark Lawrence <nomad@null.net> Tue, 18 Sep 2007 13:30:51 +0200 
+commit 4e07ecec84de6c0b115a36d5f115dac9c9f76c07
+Author: Mark Lawrence <nomad@null.net>
+Date:   Tue Sep 18 13:30:51 2007 +0200
 
     General:
         Updated to use and depend on SQL::DB v0.06.
@@ -235,87 +461,117 @@ Author: Mark Lawrence <nomad@null.net> Tue, 18 Sep 2007 13:30:51 +0200
         of MySpam->quarantine_file().
         (Thanks to Robert Meyer <r.meyer@net-wizard.org>).
 
-Commit: 1cfd9303c2f4a5ec6b60d53b5578bcd60adb756e 
-Author: Mark Lawrence <nomad@null.net> Fri, 14 Sep 2007 10:15:38 +0200 
+commit 1cfd9303c2f4a5ec6b60d53b5578bcd60adb756e
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Sep 14 10:15:38 2007 +0200
 
     Converted to SQL::DB v0.05.
     Documentation cleanup of MySpam.pm
 
-Commit: eded39728b0c47a4a93638e981a26677e3d5ed67 
-Author: Mark Lawrence <nomad@null.net> Thu, 13 Sep 2007 16:40:45 +0200 
+commit eded39728b0c47a4a93638e981a26677e3d5ed67
+Author: Mark Lawrence <nomad@null.net>
+Date:   Thu Sep 13 16:40:45 2007 +0200
 
     Complete rewrite and reorganisation.
 
-Commit: 023b35fb141c13dbd2b8fc81904bba22607801ce 
-Author: Mark Lawrence <nomad@null.net> Wed, 05 Sep 2007 17:09:28 +0200 
+commit 023b35fb141c13dbd2b8fc81904bba22607801ce
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 5 17:09:28 2007 +0200
 
     Removed data/ directory. Perl tests will be created under t/ instead.
 
-Commit: e0c9db77cff40c4e729ad4b9d2f6cc2c3233461f 
-Author: Mark Lawrence <nomad@null.net> Wed, 05 Sep 2007 17:06:28 +0200 
+commit e0c9db77cff40c4e729ad4b9d2f6cc2c3233461f
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 5 17:06:28 2007 +0200
 
     Removed data/ directory. Real tests will be created under t/* instead.
 
-Commit: 59b45d14c31f61c8c38d24fbb3553d42ad3fb15c 
-Author: Mark Lawrence <nomad@null.net> Wed, 05 Sep 2007 17:01:56 +0200 
+commit 59b45d14c31f61c8c38d24fbb3553d42ad3fb15c
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 5 17:01:56 2007 +0200
 
     Converted Makefile.PL completely to use Module::Install.
 
-Commit: 7274f53bfda75788364fefe62319a52ea0857ade 
-Author: Mark Lawrence <nomad@null.net> Wed, 05 Sep 2007 16:34:48 +0200 
+commit 7274f53bfda75788364fefe62319a52ea0857ade
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 5 16:34:48 2007 +0200
 
     Removed Changes and inc/* from repository.
 
-Commit: 7639a34dcccb3535a344ba31aa183e2c1c5ff6eb 
-Author: Robert Meyer <robert.meyer@holcim.com> Tue, 14 Aug 2007 11:07:06 +0000 
+commit 7639a34dcccb3535a344ba31aa183e2c1c5ff6eb
+Author: Robert Meyer <robert.meyer@holcim.com>
+Date:   Tue Aug 14 11:07:06 2007 +0000
 
-Commit: 7be3b5e96765b09d20bb2a7b3cba7bc4b440a98d 
-Author: Mark Lawrence <nomad@null.net> Mon, 11 Jun 2007 08:33:15 +0000 
+commit 7be3b5e96765b09d20bb2a7b3cba7bc4b440a98d
+Author: Mark Lawrence <nomad@null.net>
+Date:   Mon Jun 11 08:33:15 2007 +0000
 
     Documentation for the myspam-newsletter command.
 
-Commit: 86877b65beaec3098d715914e6f36061428659d8 
-Author: Robert Meyer <robert.meyer@holcim.com> Fri, 08 Jun 2007 13:55:24 +0000 
+commit 86877b65beaec3098d715914e6f36061428659d8
+Author: Robert Meyer <robert.meyer@holcim.com>
+Date:   Fri Jun 8 13:55:24 2007 +0000
 
     Added changes in Schema.pm to get table created by myspam-install
 
-Commit: 7b05b317d9c4ec72fe2d8966b66be1bcae1c6eb8 
-Author: Robert Meyer <robert.meyer@holcim.com> Fri, 08 Jun 2007 12:43:58 +0000 
+commit 7b05b317d9c4ec72fe2d8966b66be1bcae1c6eb8
+Author: Robert Meyer <robert.meyer@holcim.com>
+Date:   Fri Jun 8 12:43:58 2007 +0000
 
     Added email interface for subscribe, subscribe2 and unsubscribe
 
-Commit: c7547039db0d48b7ea5762e283fb4d038e524482 
-Author: Mark Lawrence <nomad@null.net> Wed, 06 Jun 2007 15:34:48 +0000 
+commit c7547039db0d48b7ea5762e283fb4d038e524482
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Jun 6 15:34:48 2007 +0000
 
     Whitelist support. Documentation not yet up to date.
 
-Commit: ca4464a6db2461fe2e15c303a34dd9461bdbbd13 
-Author: Mark Lawrence <nomad@null.net> Fri, 01 Jun 2007 10:41:02 +0000 
+commit a2009769b5f9623ac73b1418830f5cbd36b43835
+Merge: ca4464a 16d3742
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Jun 1 10:41:32 2007 +0000
+
+    Merge with /var/lib/holcim-mgmt/myspam.git
+
+commit ca4464a6db2461fe2e15c303a34dd9461bdbbd13
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Jun 1 10:41:02 2007 +0000
 
     MANIFEST.SKIP Additions
 
-Commit: bc6fbe66a7705bfe383a3c704aab765cfbeb6c2f 
-Author: Mark Lawrence <nomad@null.net> Fri, 01 Jun 2007 10:37:49 +0000 
+commit 16d3742e1d9561e7cc6becc74b8d4aa8c4e0b86b
+Merge: bc6fbe6 72ab4b4
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Jun 1 10:38:05 2007 +0000
+
+    Merge with /var/lib/holcim-mgmt/myspam.git
+
+commit bc6fbe66a7705bfe383a3c704aab765cfbeb6c2f
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Jun 1 10:37:49 2007 +0000
 
     MANIFEST.SKIP additions
 
-Commit: 7516e8341c4359d8ed4518189add95859085274d 
-Author: Mark Lawrence <nomad@null.net> Fri, 01 Jun 2007 10:35:39 +0000 
+commit 7516e8341c4359d8ed4518189add95859085274d
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Jun 1 10:35:39 2007 +0000
 
     Added vim tabstop/expandtab comands to all Perl files
 
-Commit: 47b52d5aba2af720fdd75e68f5f83bb7e2d73da0 
-Author: Mark Lawrence <nomad@null.net> Fri, 01 Jun 2007 10:34:07 +0000 
+commit 47b52d5aba2af720fdd75e68f5f83bb7e2d73da0
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Jun 1 10:34:07 2007 +0000
 
     Moved to version 0.02. First fully git/cogito controlled release.
 
-Commit: 72ab4b4ad996240dca6dd7cb2df81d1e5c3ad386 
-Author: Mark Lawrence <nomad@null.net> Fri, 01 Jun 2007 10:24:40 +0000 
+commit 72ab4b4ad996240dca6dd7cb2df81d1e5c3ad386
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Jun 1 10:24:40 2007 +0000
 
     Added vim(1) edit commands (tabstop=4 etc) to all Perl files
 
-Commit: 096bc36339f94e2423b9fa8161bc349392d52d16 
-Author: Mark Lawrence <nomad@null.net> Fri, 01 Jun 2007 09:06:26 +0000 
+commit 096bc36339f94e2423b9fa8161bc349392d52d16
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Jun 1 09:06:26 2007 +0000
 
     Initial commit
-

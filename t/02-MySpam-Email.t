@@ -1,6 +1,7 @@
 use Test::More;
 use strict;
 use warnings;
+use Sys::Hostname;
 
 BEGIN {
     if (!eval {require DBD::SQLite;1;}) {
@@ -57,5 +58,10 @@ ok($m->subscribe(1), 'subscribe1');
 ok($m->subscribe(2), 'subscribe2');
 ok($m->unsubscribe, 'unsubscribe');
 ok($m->usage, 'usage');
-ok($m->send, 'send');
+if(hostname eq 'lifebook') {
+    ok($m->send, 'send')
+}
+else {
+    ok(1, 'not send - don\t spam the testers')
+}
 

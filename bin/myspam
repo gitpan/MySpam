@@ -6,10 +6,14 @@ BEGIN {
     my $dir = dirname($0) .'/../lib';
     unshift(@INC, $dir) if(-d $dir);
 }
+use Encode qw(decode);
 use Getopt::Std;
 use LockFile::Simple;
+use POSIX qw(strftime);
 use MySpam;
 use MySpam::Email;
+
+binmode(STDOUT, ':utf8');
 
 
 my %opts;
@@ -27,15 +31,15 @@ where <command> [args] is one of:
     expire
     list          <recipient>
     release       <recipient> <id>
+    delete        <recipient> <id>
     print         <recipient> <id>
     whitelist     <recipient> <sender>
     unwhitelist   <recipient> <sender>
-    listwhitelist
+    listwhitelist <recipient>
     genwhitelist
-    subscribe     <recipient>
-    subscribe2    <recipient>
+    subscribe     <recipient> <days>
     unsubscribe   <recipient>
-    newsletter    1|2 [--send]
+    newsletter    <days> [--send]
 ";
 }
 
@@ -150,10 +154,13 @@ sub list {
     print "Quarantined mails for $recipient:\n";
     print "------------------------------------------------------------\n";
     foreach my $r (@results) {
+        my $h_from = eval { decode('MIME-Header',$r->h_from) } || 'Unknown';
+        my $h_subj = eval { decode('MIME-Header',$r->h_subject) } || 'Unknown';
+
         print
             ' Quarantined: '. gmtime($r->epoch) ." UTC\n".
-            ' From: '. $r->h_from ."\n".
-            ' Subject: '. $r->h_subject ."\n".
+            ' From: '. $h_from ."\n".
+            ' Subject: '. $h_subj ."\n".
             ' Score: '. $r->sa_score ."\n".
             ' ID: '.$r->id.' (last released: '. 
                ($r->released ? gmtime($r->released).' UTC' :'Never'). ")\n\n"
@@ -163,21 +170,14 @@ sub list {
         print " None\n\n";
     }
 
-    print "Whitelist for $recipient:\n";
-    print "------------------------------------------------------------\n";
-#    $SQL::DB::DEBUG=1;
-    my @wl = $m->get_whitelist($recipient);
-    foreach my $w (@wl) {
-        print ' '. $w->sender . "\n";
-    }
-    if (!@wl) {
-        print " None\n\n";
-    }
+    listwhitelist($recipient);
 
     print "Subscription Status for $recipient:\n";
     print "------------------------------------------------------------\n";
     if (my $s = $m->get_subscriber($recipient)) {
-        print " Subscribed to ". $s->period . "\n\n";
+        print " Newsletter every "
+            .  ($s->period == 1 ? 'day.' : $s->period .' days.')
+            ."\n\n";
     }
     else {
         print " Not subscribed\n\n";
@@ -196,6 +196,18 @@ sub release {
     else {
         die "Mail NOT Released";
     }
+}
+
+
+sub remove {
+    my $recipient = shift || usage;
+    my $id        = shift || usage;
+    cm();
+
+    unless (my $res = $m->remove($recipient,$id)) {
+        die "Mail NOT Deleted: $res";
+    }
+    print "Mail Deleted\n";
 }
 
 
@@ -241,11 +253,21 @@ sub unwhitelist { my $recipient = shift || usage;
 
 
 sub listwhitelist {
+    my $recipient = shift || usage;
     cm();
 
-    foreach my $entry ($m->get_whitelist_all()) {
-        printf("%-30s %s\n", $entry->sender, $entry->recipient);
+    print "Whitelist for $recipient:\n";
+    print "------------------------------------------------------------\n";
+
+    my @wl = $m->get_whitelist($recipient);
+    foreach my $w (@wl) {
+        printf(" %-42s %s UTC\n", $w->sender,
+            strftime('%F %R', gmtime($w->epoch)) );
     }
+    if (!@wl) {
+        print " None\n";
+    }
+    print "\n";
 }
 
 
@@ -261,21 +283,7 @@ sub genwhitelist {
 
 sub subscribe {
     my $recipient = shift || usage;
-    my $period    = 1;
-    cm();
-
-    if ($m->subscribe($recipient,$period)) {
-        print "$recipient is subscribed($period)\n";
-    }
-    else {
-        die "$recipient is NOT subscribed($period)";
-    }
-}
-
-
-sub subscribe2 {
-    my $recipient = shift || usage;
-    my $period    = 2;
+    my $period    = shift || usage;
     cm();
 
     if ($m->subscribe($recipient,$period)) {
@@ -323,12 +331,7 @@ sub newsletter {
         $e->reset;
         $e->to($sub->subscriber);
         $e->from('myspam@'. $domain);
-        if ($sub->period == 1) {
-            $e->subject('MySpam Weekly Newsletter');
-        }
-        else {
-            $e->subject('MySpam Bi-Weekly Newsletter');
-        }
+        $e->subject('MySpam Newsletter');
         $e->list($sub->last_sent);
         $e->send;
         $m->subscriber_sent($sub);
@@ -352,6 +355,9 @@ elsif ($cmd eq 'list') {
 }
 elsif ($cmd eq 'release') {
     release(@ARGV);
+}
+elsif ($cmd eq 'delete') {
+    remove(@ARGV);
 }
 elsif ($cmd eq 'print') {
     printraw(@ARGV);
@@ -443,6 +449,10 @@ List the mails which are in the database for <recipient>
 
 Release the mail with matching <recipient> and <id>.
 
+=head2 delete <recipient> <id>
+
+Delete the mail with matching <recipient> and <id>.
+
 =head2 whitelist <recipient> <sender>
 
 Add address <sender> to the whitelist for <recipient>. The whitelist
@@ -455,9 +465,10 @@ Remove address <sender> from the whitelist for <recipient>. The whitelist
 functionality only works if the appropriate plugin for SpamAssassin
 has been installed and configured.
 
-=head2 listwhitelist
+=head2 listwhitelist <recipient>
 
-Print the complete whitelist.
+Print the whitelist for <recipient>. Output includes the date each
+whitelist entry was created.
 
 =head2 genwhitelist
 
@@ -466,19 +477,10 @@ whitelist. This DBM file can be used by the MySpam/Whitelist plugin
 for SpamAssassin to decrease the score for matching pairs. This command
 is not normally run by hand but would be called by a cron(8) job.
 
-=head2 subscribe <recipient>
+=head2 subscribe <recipient> <days>
 
-Add the address <recipient> to the weekly subscription
-list. The weekly subscription list is used by the newsletter command to send
-an automatic 'list' to subscribers each week. <recipient> will
-automatically be removed from the bi-weekly list if subscribed there.
-
-=head2 subscribe2 <recipient>
-
-Add the address <recipient> to the bi-weekly subscription
-list. The bi-weekly subscription list is used by the newsletter command
-to send an automatic 'list' to subscribers every second week. <recipient>
-will automatically be removed from the bi-weekly list if subscribed there.
+Add the address <recipient> to the subscription list sent every <days>
+days.
 
 =head2 unsubscribe <recipient>
 
@@ -486,11 +488,7 @@ Remove the address <recipient> from all subscription lists.
 
 =head2 newsletter [--send]
 
-For each address subscribed to the weekly subscription, send a 'list'
-response if it has been more than six days since their last newsletter.
-
-For each address subscribed to the bi-weekly subscription, send a 'list'
-response if it has been more than thirteen days since their last newsletter.
+Send out the newsletter to addresses whose subscription is due today.
 
 If --send is not given then this command merely prints the addresses that
 would receive a newsletter.
@@ -551,7 +549,7 @@ Mark Lawrence E<lt>nomad@null.netE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2007 Mark Lawrence <nomad@null.net>
+Copyright 2007-2009 Mark Lawrence <nomad@null.net>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

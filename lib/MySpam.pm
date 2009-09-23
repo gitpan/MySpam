@@ -1,5 +1,4 @@
 package MySpam;
-use 5.0006;
 use strict;
 use warnings;
 use Carp qw(croak);
@@ -17,7 +16,7 @@ use File::Copy;
 use GDBM_File;
 
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 
 define_tables(
@@ -98,7 +97,16 @@ sub new {
 
     my $db = SQL::DB->new();
 
-    if (!eval{$db->connect($conf->{dbi}, $conf->{user}, $conf->{pass});1;}) {
+    eval {
+        $db->connect(
+            $conf->{dbi},
+            $conf->{user},
+            $conf->{pass},
+            { },
+        );
+    };
+
+    if ($@) {
         $self->error("Database: $@");
         return;
     }
@@ -263,6 +271,28 @@ sub get_quarantined_mails {
 }
 
 
+sub raw {
+    my $self  = shift;
+    my $email = shift || croak 'usage: raw($email,$id)';
+    my $id    = shift || croak 'usage: raw($email,$id)';
+    $email    = lc($email);
+
+    my $r = $self->{db}->arow('recipients');
+    my $m = $self->{db}->arow('messages');
+
+    my $recipient = $self->{db}->fetch1(
+        select   => [$r->_columns, $m->raw],
+        from      => $r,
+        left_join => $m,
+        on        => $r->message == $m->id,
+        where     => ($r->id == $id) & ($r->email == $email),
+    );
+
+    return unless ($recipient);
+    return ($recipient, memBunzip($recipient->raw));
+}
+
+
 sub release {
     my $self  = shift;
     my $email = shift || croak 'usage: release($email,$id)';
@@ -296,6 +326,54 @@ sub release {
 }
 
 
+sub remove {
+    my $self  = shift;
+    my $email = shift || croak 'usage: release($email,$id)';
+    my $id    = shift || croak 'usage: release($email,$id)';
+    $email    = lc($email);
+
+    my $res = $self->{db}->txn(sub{
+        my $recipients = $self->{db}->arow('recipients');
+        my $messages = $self->{db}->arow('messages');
+
+        my $recipient = $self->{db}->fetch1(
+            select   => [
+                $recipients->id->as('rid'),
+                $messages->id->as('mid')
+            ],
+            from      => $recipients,
+            left_join => $messages,
+            on        => $recipients->message == $messages->id,
+            where     => ($recipients->id == $id) &
+                         ($recipients->email == $email),
+        );
+
+        if (!$recipient) {
+            return 1;
+        }
+
+        my $d1 = $self->{db}->do(
+            delete_from => $messages,
+            where       => $messages->id == $recipient->mid,
+        );
+
+        my $d2 = $self->{db}->do(
+            delete_from => $recipients,
+            where       => $recipients->id == $recipient->rid,
+        );
+
+        if ($d1 and $d2) {
+            $self->log("Deleted $id for $email");
+            return 1;
+        }
+
+        $self->log("Delete $id for $email: FAILED (unknown error)");
+        die "Delete $id for $email: FAILED (unknown error)";
+    });
+    return $res;
+}
+
+
 sub sendmail {
     my $self = shift;
     my $to   = shift || croak 'usage: sendmail($to,$text)';
@@ -322,13 +400,15 @@ sub add_to_whitelist {
     my $recipient = shift || croak 'usage add_to_whitelist($recipient,$sender)';
     my $sender    = shift || croak 'usage add_to_whitelist($recipient,$sender)';
 
-    # Make sure sender is valid email address
-    if (!valid($sender)) {
-        return;
-    }
-
     $sender       = lc($sender);
     $recipient    = lc($recipient);
+    $sender       =~ s/^<(.*)>$/$1/;
+    $recipient    =~ s/^<(.*)>$/$1/;
+
+    # Make sure sender is valid email address or a domain match
+    if (!valid($sender) && $sender !~ /^\*\@/) {
+        return;
+    }
 
     # First of all check if this already exists
     my $wl = $self->{db}->arow('whitelist');
@@ -354,6 +434,24 @@ sub add_to_whitelist {
     }
 
     $self->log("Whitelisted $sender => $recipient");
+
+    # Since this address is now whitelisted, lets release all the
+    # matching mails in the quarantine
+
+    my $recipients = $self->{db}->arow('recipients');
+    @list = $self->{db}->fetch(
+        select => [
+            $recipients->id
+        ],
+        from   => $recipients,
+        where  => ($recipients->email == $recipient) &
+                  ($recipients->sender == $sender),
+    );
+
+    foreach my $mail (@list) {
+        $self->release($recipient, $mail->id);
+    }
+
     return 1;
 
 }
@@ -471,8 +569,8 @@ sub generate_whitelist_dbm {
 
 sub subscribe {
     my $self   = shift;
-    my $email  = shift || croak 'usage: subscribe($email, $period)';
-    my $period = shift || croak 'usage: subscribe($email, $period)';
+    my $email  = shift || croak 'usage: subscribe($email, $days)';
+    my $days = shift || croak 'usage: subscribe($email, $days)';
     $email     = lc($email);
 
     # First of all check if this already exists
@@ -485,7 +583,7 @@ sub subscribe {
     );
 
     if ($item) {
-        $item->set_period($period);
+        $item->set_period($days);
         eval{ $self->{db}->update($item);};
         if ($@) {
             $self->error($@);
@@ -496,7 +594,7 @@ sub subscribe {
 
     $item = Subscriber->new({
         subscriber => $email,
-        period => $period,
+        period => $days,
     });
 
     eval{ $self->{db}->insert($item);};
@@ -522,20 +620,6 @@ sub get_subscriber {
 }
 
 
-sub get_subscribers {
-    my $self   = shift;
-    my $period = shift || die 'usage: get_subscribers($period)';
-
-    my $r = $self->{db}->arow('subscribers');
-    my @list = $self->{db}->fetch(
-        select  => [$r->_columns],
-        from     => $r,
-        where    => $r->period == $period,
-    );
-    return @list;
-}
-
-
 sub subscriber_sent {
     my $self       = shift;
     my $subscriber = shift || die "missing subscriber";
@@ -554,19 +638,18 @@ sub subscriber_newsletter_list {
     my $self = shift;
 
     my $now    = time;
-    my $week   = $now - 60*60*24*6;
-    my $biweek = $now - 60*60*24*13;
+    my $day_in_seconds = 60*60*24;
 
     my $subscribers = $self->{db}->arow('subscribers');
-    my @list = $self->{db}->fetch(
-        select => [$subscribers],
-        from   => $subscribers,
-        where  => (($subscribers->period == 1) &
-                   ($subscribers->last_sent < $week)) |
-                  (($subscribers->period == 2) &
-                   ($subscribers->last_sent < $biweek)),
-    );
 
+    my @list = $self->{db}->fetch(
+        select => [
+            $subscribers->_columns,
+        ],
+        from   => $subscribers,
+        where  => ($subscribers->period * $day_in_seconds) <
+                  ($now - $subscribers->last_sent)
+    );
     return @list;
 }
 
@@ -700,6 +783,11 @@ $recipient object.
 Forwards the mail identified by ($email,$id) to address $email.
 Returns the matching Recipient object.
 
+=head2 remove($email, $id)
+
+Removes the mail identified by $email,$id from the database. Returns
+true if the mail was deleted or did not exist, false otherwise.
+
 =head2 sendmail($to, $text)
 
 Internal method. Calls /usr/sbin/sendmail to deliver $text to $to.
@@ -733,21 +821,15 @@ separated by a '|' as the key values. If $file is not given then the
 the 'whitelist' configuration item is used. If neither exist/defined
 then this method croaks.
 
-=head2 subscribe($email, $period)
+=head2 subscribe($email, $days)
 
-Subscribes $email to the $period subscription list. Is automatically
-unsubscribed from all other lists if subscribed elsewhere. $period
-must be either '1' or '2'.
+Subscribes $email to the newsletter, to be received every $days days.
+Automatically unsubscribes from all other lists if subscribed
+elsewhere.
 
 =head2 get_subscriber($email)
 
 Return the Subscriber object (if it exists) for $email.
-See DATABASE SCHEMA below for the methods of the returned objects.
-
-=head2 get_subscribers($period)
-
-Returns the list of Subscriber objects for period $period. $period must
-be either "1" or "2".
 See DATABASE SCHEMA below for the methods of the returned objects.
 
 =head2 subscriber_sent($subscriber)
@@ -842,7 +924,7 @@ Mark Lawrence E<lt>nomad@null.netE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2006-2007 Mark Lawrence <nomad@null.net>
+Copyright 2006-2009 Mark Lawrence <nomad@null.net>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -3,11 +3,12 @@ use strict;
 use warnings;
 use Mail::SpamAssassin;
 use Mail::SpamAssassin::Plugin;
+use Mail::RFC822::Address qw(valid);
 use DB_File;
 use Fcntl;
 use GDBM_File;
 
-our $VERSION = "0.09";
+our $VERSION = "0.10";
 our @ISA = qw(Mail::SpamAssassin::Plugin);
 
 
@@ -90,20 +91,22 @@ sub whitelistdbm_from_to {
     $self->init($permsgstatus);
 
     SEARCH: foreach my $f_addr (@{$self->{from_addr}}) {
-        # Check for valid email-adress (catches most of the
-        # valid addresses)
-        my $regex = qr/^[\w-]+(?:\.[\w-]+)*@(?:[\w-]+\.)+[a-zA-Z]{2,7}$/o;
-        next unless ( $f_addr =~ m/$regex/ );
+        next unless (valid($f_addr));
+        $f_addr =~ s/^<(.*)>$/$1/;
+        (my $f_addr_domain = $f_addr) =~ s/.*\@/\*\@/;
 
         foreach my $t_addr (@{$self->{to_addr}}) {
-            next unless ( $t_addr =~ m/$regex/ );
+            next unless (valid($t_addr));
+            $t_addr =~ s/^<(.*)>$/$1/;
 
-            my $key = lc($f_addr).'|'.$t_addr;
+            my $key = lc($f_addr) .'|'. lc($t_addr);
+            my $key2 = lc($f_addr_domain) .'|'. lc($t_addr);
 
-            dbg ("WhitelistDBM: t8 $f_addr,$t_addr,$key\n");
+            dbg ("WhitelistDBM: t8 $f_addr,$t_addr,$key,$key2\n");
 
-            if ( exists $self->{spamlist}->{$key} ) {
-                dbg ("WhitelistDBM: t9 $f_addr,$t_addr,$key\n");
+            if ( exists $self->{spamlist}->{$key} ||
+                 exists $self->{spamlist}->{$key2} ) {
+                dbg ("WhitelistDBM: t9 $f_addr,$t_addr,$key,$key2\n");
 
                 my $rule = 'WHITELISTDBM_FROM_TO';
                 my $score = $permsgstatus->{conf}->{scores}->{$rule};

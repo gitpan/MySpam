@@ -1,17 +1,22 @@
-abstract: Manage SPAM mail quarantined by sa-exim
-author: Mark Lawrence <nomad@null.net>
-build_requires: 
-  DBD::SQLite: 0
+---
+abstract: 'Manage SPAM mail quarantined by sa-exim'
+author:
+  - 'Mark Lawrence <nomad@null.net>'
+build_requires:
+  DBD::SQLite: 1.14
   Test::More: 0.42
 distribution_type: module
-generated_by: Module::Install version 0.64
+generated_by: 'Module::Install version 0.76'
 license: GPL
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
 name: MySpam
-no_index: 
-  directory: 
+no_index:
+  directory:
     - inc
     - t
-requires: 
+requires:
   Compress::Bzip2: 0
   Config::File: 0
   Email::Simple: 0
@@ -21,8 +26,7 @@ requires:
   MIME::Base64: 0
   MIME::Lite: 0
   Mail::RFC822::Address: 0
-  SQL::DB: 0.13
+  SQL::DB: 0.16
   Time::HiRes: 0
-  XML::API::XHTML: 0.17
-  perl: 5.0006
-version: 0.09
+  XML::API::XHTML: 0.24
+version: 0.10

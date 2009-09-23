@@ -6,13 +6,7 @@ use File::Slurp qw(read_file);
 BEGIN {
     unlink('t/myspamtest.db');
     unlink('t/whitelist.db');
-
-    if (!eval {require DBD::SQLite;1;}) {
-        plan skip_all => "DBD::SQLite not installed: $@";
-    }
-    else {
-        plan tests => 55;
-    }
+    plan tests => 49;
 }
 
 END {
@@ -34,7 +28,9 @@ can_ok($m, qw/
     quarantine_file
     quarantine
     get_quarantined_mails
+    raw
     release
+    remove
     sendmail
     add_to_whitelist
     remove_from_whitelist
@@ -42,7 +38,6 @@ can_ok($m, qw/
     get_whitelist
     get_whitelist_all
     subscribe
-    get_subscribers
     subscriber_sent
     unsubscribe
     get_subscriber
@@ -81,31 +76,20 @@ ok($m->remove_from_whitelist('postmaster@localhost', 'mlawren@localhost'),
 ok(!$m->get_whitelist('postmaster@localhost'), 'Nothing in whitelist');
 
 
-ok(!$m->get_subscribers(1), 'No subscribers 1');
-ok(!$m->get_subscribers(2), 'No subscribers 2');
 ok(!$m->get_subscriber('postmaster@localhost'), 'Not subscribed');
 ok($m->unsubscribe('postmaster@localhost'), 'Not subscribed');
 ok(!$m->get_subscriber('postmaster@localhost'), 'Not subscribed');
 ok($m->subscribe('postmaster@localhost',1), 'Subscribed 1');
 ok($m->get_subscriber('postmaster@localhost'), 'Subscribed');
-ok($m->get_subscribers(1), 'Subscrition list 1');
-ok(!$m->get_subscribers(2), 'No Subscrition list 2');
 ok($m->unsubscribe('postmaster@localhost'), 'Unsubscribed 1');
-ok(!$m->get_subscribers(1), 'Unsubscribed 1');
 ok(!$m->get_subscriber('postmaster@localhost'), 'Unsubscribed');
 ok($m->subscribe('postmaster@localhost',1), 'Subscribed 1');
 ok($m->subscribe('postmaster@localhost',2), 'Subscribed 2');
 ok($m->subscriber_newsletter_list, 'Newsletter list');
 ok($m->subscriber_sent($m->subscriber_newsletter_list), 'subscriber updated');
 ok(!$m->subscriber_newsletter_list, 'No Newsletter list');
-ok(!$m->get_subscribers(1), 'No Subscrition list 1');
-ok($m->get_subscribers(2), 'Subscrition list 2');
-#isa_ok($m->get_subscriber('postmaster@localhost'), 'Subscriber');
 ok($m->subscribe('postmaster@localhost',1), 'Subscribed 1');
-ok($m->get_subscribers(1), 'Subscrition list 1');
-ok(!$m->get_subscribers(2), 'No Subscrition list 2');
 ok($m->unsubscribe('postmaster@localhost'), 'Unsubscribed 2');
-ok(!$m->get_subscribers(2), 'No Subscrition list 2');
 
 
 ok(!$m->get_quarantined_mails('postmaster@localhost'),
@@ -117,15 +101,23 @@ ok($m->quarantine_file('t/1189238618_spam'), 'File quarantined');
 my $contents = read_file('t/1189238618_spam');
 ok($m->quarantine($contents, 1189238618), 'Mail quarantined');
 
-ok($m->get_quarantined_mails('postmaster@localhost'), 'Have quarantined mail');
 my @r = $m->get_quarantined_mails('postmaster@localhost');
-#isa_ok($r[0], 'Recipient');
+ok(@r, 'Have quarantined mail');
+
+my ($recipient, $raw) = $m->raw('postmaster@localhost',1);
+is($raw,$contents, 'raw in and out');
 
 ok($m->release('postmaster@localhost',1), 'Released a mail');
 my $rel = $m->release('postmaster@localhost',1);
 #isa_ok($rel, 'Recipient');
 
 ok(!$m->release('unknown@localhost',1), 'Not Released someone elses mail');
+
+ok($m->remove('postmaster@localhost',1), 'Removed a mail');
+ok($m->remove('postmaster@localhost',1), 'Removed a mail, non-existent');
+
+ok($m->add_to_whitelist('postmaster@localhost', 'mkp@clde.e.telefonica.net'),
+    'Added to whitelist'); # This should release one
 
 my ($dr,$dm) = $m->expire(time - 1189238518);
 ok(!$dr, $dr . ' Recipients expired');

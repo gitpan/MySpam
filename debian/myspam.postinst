@@ -75,11 +75,13 @@ case "$1" in
             fi
         fi
 
-        dbsize=$(stat -c%s /var/lib/myspam/myspam.db)
-        if grep '^dbi.* dbi:SQLite:/var/lib/myspam/myspam.db' \
-            /etc/myspam/myspam.conf > /dev/null 2>&1 ; then
-            if [ $dbsize == '0' ]; then
-                myspam install --db
+        if [ -f /var/lib/myspam/myspam.db ]; then
+            dbsize=$(stat -c%s /var/lib/myspam/myspam.db)
+            if grep '^dbi.* dbi:SQLite:/var/lib/myspam/myspam.db' \
+                /etc/myspam/myspam.conf > /dev/null 2>&1 ; then
+                if [ $dbsize == '0' ]; then
+                    myspam install --db
+                fi
             fi
         fi
 

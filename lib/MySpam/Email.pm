@@ -15,7 +15,7 @@ use MySpam;
 use MIME::Lite;
 use HTML::Entities;
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 
 sub new {
@@ -114,9 +114,8 @@ sub usage {
         ['whitelist', 'List the current addresses in the whitelist'],
         ['whitelist:<address>', 'Add <address> to the whitelist'],
         ['unwhitelist:<address>', 'Remove <address> from the whitelist'],
-        ['subscribe', 'subscribe to a weekly newsletter containing the list of quaranteened mails'],
-        ['subscribe2', 'subscribe to a bi-weekly newsletter containing the list of quaranteened mails'],
-        ['unsubscribe', 'unsubscribe from the weekly or bi-weekly newsletter'],
+        ['subscribe<#>', 'subscribe to a newsletter containing the list of quaranteened mails, sent every # days'],
+        ['unsubscribe', 'unsubscribe from the newsletter'],
     ) {
         $self->{body} .= "$_->[0] - $_->[1]\n";
 
@@ -161,19 +160,36 @@ sub list_whitelist {
 
     $self->{body} .= "Current Whitelist\n";
     $x->h2("Current Whitelist");
-    $x->p_open;
 
     my @wl = $self->{myspam}->get_whitelist($self->{to});
-    foreach my $w (@wl) {
-        $self->{body} .= ' '. $w->sender . "\n";
-        $x->_add($w->sender);
-        $x->br;
+
+    if (@wl) {
+        $x->table_open(-id => 'whitelist');
+        $x->tr_open;
+        $x->th('Sender (click to remove from whitelist)');
+        $x->th('Whitelisted');
+        $x->tr_close;
     }
+
+    foreach my $w (@wl) {
+        $self->{body} .= sprintf(" %-42s %s UTC\n", $w->sender,
+                                strftime('%F %R', gmtime($w->epoch)) );
+        $x->tr_open;
+        $x->td_open;
+        $x->a(-href => "mailto:$self->{from}?subject=unwhitelist:" .
+            $w->sender, $w->sender);
+        $x->td_close;
+        $x->td(strftime('%F %R', gmtime($w->epoch)) . ' UTC');
+        $x->tr_close;
+    }
+
     if (!@wl) {
         $self->{body} .= " None\n\n";
-        $x->_add('None');
+        $x->p('None');
     }
-    $x->p_close;
+    else {
+        $x->table_close;
+    }
 
     return 1;
 }
@@ -206,7 +222,7 @@ sub list {
     $x->table_open(-id => 'quarantine');
     $x->tr_open;
     $x->th('Date (UTC)');
-    $x->th('From');
+    $x->th('From (click to whitelist)');
     $x->th('Subject');
     $x->th('Score');
     $x->th('Released');
@@ -214,21 +230,26 @@ sub list {
 
     my $odd = 1;
     foreach my $recip (@recipients) {
+        my $h_from    = eval { decode('MIME-Header',$recip->h_from) };
+        my $h_subject = eval { decode('MIME-Header',$recip->h_subject) };
+
         # text version
         $self->{body} .= "\n    Date: ".
                             strftime('%F %R', gmtime($recip->epoch));
-        $self->{body} .= "\n    From: ". $recip->h_from;
-        $self->{body} .= "\n Subject: ". $recip->h_subject;
+        $self->{body} .= "\n    From: ". $h_from;
+        $self->{body} .= "\n Subject: ". $h_subject;
         $self->{body} .= "\n      ID: ". $recip->id;
     
-        (my $hfromname = $recip->h_from) =~ s/(<.*)|(\")|(^\s+)|(\s+$)//g;
-        (my $hfrom = $recip->h_from) =~ s/(.*<)|(>.*)//g;
-
         # html version
         $x->tr_open(-class => $odd ? 'odd' : 'even');
         $x->td(-class => 'date', strftime('%F %R', gmtime($recip->epoch)));
-        $x->td(-class => 'from', decode('MIME-Header',$recip->h_from));
-        $x->td(-class => 'subject', decode('MIME-Header',$recip->h_subject));
+
+        $x->td_open(-class => 'from');
+        $x->a(-href => "mailto:$self->{from}?subject=whitelist:" .
+            $recip->sender, $h_from);
+        $x->td_close;
+
+        $x->td(-class => 'subject', $h_subject);
         $x->td(-class => 'num', sprintf('%.1f', $recip->sa_score));
 
         if ($recip->released) {
@@ -272,22 +293,7 @@ to $self->{from} and paste the Release:12345678910' text
         ." 'Release:12345678910' text (without the quotes) into the subject"
         ." field.");
 
-    $self->{body} .= "Current Whitelist\n";
-    $x->h2("Current Whitelist");
-    $x->p_open;
-
-    my @wl = $self->{myspam}->get_whitelist($self->{to});
-    foreach my $w (@wl) {
-        $self->{body} .= ' '. $w->sender . "\n";
-        $x->_add($w->sender);
-        $x->br;
-    }
-    if (!@wl) {
-        $self->{body} .= " None\n\n";
-        $x->_add('None');
-    }
-    $x->p_close;
-
+    $self->list_whitelist();
 
     $self->{body} .= "Subscription Status\n";
     $x->h2("Subscription Status");
@@ -299,14 +305,10 @@ to $self->{from} and paste the Release:12345678910' text
         $x->_add('None');
     }
     else {
-        if ($sub->period == 1) {
-            $self->{body} .= ' Subscribed to the Weekly newsletter' . "\n";
-            $x->_add('Subscribed to the Weekly newsletter');
-        }
-        else {
-            $self->{body} .= ' Subscribed to the Bi-Weekly newsletter' . "\n";
-            $x->_add('Subscribed to the Bi-Weekly newsletter');
-        }
+        $self->{body} .= ' Receives a newsletter every '.
+            ($sub->period == 1 ? 'day' : $sub->period .' days'). ".\n";
+        $x->_add(' Receives a newsletter every '.
+            ($sub->period == 1 ? 'day' : $sub->period .' days'). '.');
         $x->br;
     }
     $x->p_close;
@@ -324,11 +326,15 @@ sub release {
     my $x = $self->{xbody};
 
     if (my $recip = $self->{myspam}->release($self->{to}, $id)) {
+        my $h_from    = eval { decode('MIME-Header',$recip->h_from) }
+        || 'Unknown';
+        my $h_subject = eval { decode('MIME-Header',$recip->h_subject) };
+
         $self->{body} .= "\nThe following mail has been released.\n";
         $self->{body} .= "\n    Date: ".
                             strftime('%F %R', gmtime($recip->epoch));
-        $self->{body} .= "\n    From: ". $recip->h_from;
-        $self->{body} .= "\n Subject: ". $recip->h_subject;
+        $self->{body} .= "\n    From: ". $h_from;
+        $self->{body} .= "\n Subject: ". $h_subject;
         $self->{body} .= "\n      ID: ". $recip->id;
 
         $x->p("The following mail has been released");
@@ -344,8 +350,8 @@ sub release {
 
         $x->tr_open(-class => 'odd');
         $x->td(-class => 'date', strftime('%F %R', gmtime($recip->epoch)));
-        $x->td(-class => 'from', decode('MIME-Header',$recip->h_from));
-        $x->td(-class => 'subject', decode('MIME-Header',$recip->h_subject));
+        $x->td(-class => 'from', $h_from);
+        $x->td(-class => 'subject', $h_subject);
         $x->td(-class => 'num', sprintf('%.1f', $recip->sa_score));
         $x->td_open(-class => 'released');
         $x->a(-href => "mailto:$self->{from}?subject=Release:" .
@@ -438,19 +444,19 @@ sub unsubscribe {
 sub subscribe {
     my $self = shift;
     my $list = shift || croak 'usage: subscribe($list)';
-    $self->{to} || croak 'must set to() before calling unsubscribe';
+    $self->{to} || croak 'must set to() before calling subscribe';
     return unless($self->connect());
 
     my $x = $self->{xbody};
 
     if ($self->{myspam}->subscribe($self->{to}, $list)) {
-        $self->{body} .= "\n'$self->{to}' has been subscribed$list.\n";
+        $self->{body} .= "\n'$self->{to}' has been subscribed: $list.\n";
 
-        $x->p("$self->{to} has been subscribed$list.");
+        $x->p("$self->{to} has been subscribed: $list.");
         return 1;
     }
-    $self->{body} .= "\n$self->{to} could NOT be subscribed$list.\n";
-    $x->p("\n$self->{to} could NOT be subscribed$list.\n");
+    $self->{body} .= "\n$self->{to} could NOT be subscribed: $list.\n";
+    $x->p("\n$self->{to} could NOT be subscribed: $list.\n");
     return;
 }
 
@@ -649,10 +655,9 @@ Croaks if to() has not already been called.
 Unsubscribes address $to from all subscription lists.
 Croaks if to() has not already been called.
 
-=head2 subscribe(1|2)
+=head2 subscribe($days)
 
-Subscribe address $to to the subscription '1' or '2'. See L<myspam>
-for the meanings of the different subscriptions.
+Subscribe address $to to a newsletter sent every $days.
 
 =head2 send()
 
@@ -678,7 +683,7 @@ Mark Lawrence E<lt>nomad@null.netE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2007 Mark Lawrence <nomad@null.net>
+Copyright 2007-2009 Mark Lawrence <nomad@null.net>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
