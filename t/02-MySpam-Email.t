@@ -8,12 +8,20 @@ BEGIN {
         plan skip_all => "DBD::SQLite not installed: $@";
     }
     else {
-        plan tests => 18;
+        plan tests => 20;
     }
 }
 
 
 use_ok('MySpam::Email');
+
+# Don't spam the testers
+if( hostname ne 'lifebook' ) {
+    no warnings 'redefine';
+    no warnings 'once';
+    *{MySpam::sendmail} = sub {1};
+}
+
 
 can_ok('MySpam::Email', qw/
     new
@@ -55,13 +63,10 @@ ok($m->list_whitelist, 'list_whitelist');
 ok($m->list, 'list');
 ok($m->unwhitelist('postmaster@localhost'), 'whitelist');
 ok($m->subscribe(1), 'subscribe1');
+ok($m->list, 'list');
 ok($m->subscribe(2), 'subscribe2');
+ok($m->list, 'list');
 ok($m->unsubscribe, 'unsubscribe');
 ok($m->usage, 'usage');
-if(hostname eq 'lifebook') {
-    ok($m->send, 'send')
-}
-else {
-    ok(1, 'not send - don\t spam the testers')
-}
+ok($m->send, 'send')
 

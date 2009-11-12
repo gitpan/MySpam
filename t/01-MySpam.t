@@ -2,6 +2,7 @@ use Test::More;
 use strict;
 use warnings;
 use File::Slurp qw(read_file);
+use Sys::Hostname;
 
 BEGIN {
     unlink('t/myspamtest.db');
@@ -14,6 +15,13 @@ END {
 }
 
 use_ok('MySpam');
+
+# Don't spam the testers
+if( hostname ne 'lifebook' ) {
+    no warnings 'redefine';
+    no warnings 'once';
+    *{MySpam::sendmail} = sub {1};
+}
 
 my $m = MySpam->new('t/test.conf');
 isa_ok($m, 'MySpam');

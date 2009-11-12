@@ -15,7 +15,7 @@ use MySpam;
 use MIME::Lite;
 use HTML::Entities;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 
 sub new {
@@ -230,8 +230,10 @@ sub list {
 
     my $odd = 1;
     foreach my $recip (@recipients) {
-        my $h_from    = eval { decode('MIME-Header',$recip->h_from) };
-        my $h_subject = eval { decode('MIME-Header',$recip->h_subject) };
+        my $h_from    = eval { decode('MIME-Header',$recip->h_from) }
+            || 'Unknown';
+        my $h_subject = eval { decode('MIME-Header',$recip->h_subject) }
+            || 'None';
 
         # text version
         $self->{body} .= "\n    Date: ".
@@ -307,9 +309,16 @@ to $self->{from} and paste the Release:12345678910' text
     else {
         $self->{body} .= ' Receives a newsletter every '.
             ($sub->period == 1 ? 'day' : $sub->period .' days'). ".\n";
+
+        $self->{body} .= ' Newsletter last sent: '.
+            strftime('%F %R UTC', gmtime($sub->last_sent)) ."\n";
+
         $x->_add(' Receives a newsletter every '.
             ($sub->period == 1 ? 'day' : $sub->period .' days'). '.');
-        $x->br;
+        $x->p_close;
+        $x->p_open;
+        $x->_add('Newletter last sent: '.
+            strftime('%F %R UTC', gmtime($sub->last_sent)));
     }
     $x->p_close;
 
@@ -327,8 +336,9 @@ sub release {
 
     if (my $recip = $self->{myspam}->release($self->{to}, $id)) {
         my $h_from    = eval { decode('MIME-Header',$recip->h_from) }
-        || 'Unknown';
-        my $h_subject = eval { decode('MIME-Header',$recip->h_subject) };
+            || 'Unknown';
+        my $h_subject = eval { decode('MIME-Header',$recip->h_subject) }
+            || 'None';
 
         $self->{body} .= "\nThe following mail has been released.\n";
         $self->{body} .= "\n    Date: ".
@@ -495,7 +505,7 @@ sub send {
     if ($delta) {
         $self->{body} .= sprintf("Response generated in %.3f seconds", $delta);
     }
-    $mail->attach(Type => 'TEXT', Data => $self->{body});
+    $mail->attach(Type => 'text/plain; charset=UTF-8', Data => $self->{body});
 
 
     my $xbody = $self->{xbody};
@@ -525,7 +535,7 @@ sub send {
 
     my $tmp = $x->_as_string;
     $tmp =~ s/<\?xml.*\?>//;
-    $mail->attach(Type => 'text/html', Data => $tmp);
+    $mail->attach(Type => 'text/html; charset=UTF-8', Data => $tmp);
 
     eval {
         $mail->send('sendmail');

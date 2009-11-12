@@ -39,7 +39,7 @@ where <command> [args] is one of:
     genwhitelist
     subscribe     <recipient> <days>
     unsubscribe   <recipient>
-    newsletter    <days> [--send]
+    newsletter    [--send]
 ";
 }
 
@@ -177,7 +177,10 @@ sub list {
     if (my $s = $m->get_subscriber($recipient)) {
         print " Newsletter every "
             .  ($s->period == 1 ? 'day.' : $s->period .' days.')
-            ."\n\n";
+            ."\n";
+        print " Newsletter last sent: ".
+            strftime('%F %R UTC', gmtime($s->last_sent)) ."\n\n";
+
     }
     else {
         print " Not subscribed\n\n";
@@ -317,24 +320,35 @@ sub newsletter {
 
     if (!$send) {
 
-        print "Subscribers due for a newsletter:\n";
+        print "Subscribers overdue for a newsletter:\n";
+        printf(" %-42s %s\n", 'Address', 'Last Sent');
+        printf(" %-42s %s\n", '--------------------', '--------------------');
         foreach my $sub (@list) {
-            print '    ' . $sub->subscriber ."\n";
+            printf(" %-42s %s UTC\n", $sub->subscriber,
+                strftime('%F %R', gmtime($sub->last_sent)) );
         }
         return;
     }
 
     my $e = MySpam::Email->new($opts{c});
+    my $now = time;
 
     foreach my $sub (@list) {
-        (my $domain = $sub->subscriber) =~ s/.*\@//;
-        $e->reset;
-        $e->to($sub->subscriber);
-        $e->from('myspam@'. $domain);
-        $e->subject('MySpam Newsletter');
-        $e->list($sub->last_sent);
-        $e->send;
-        $m->subscriber_sent($sub);
+        my $delta = $now - $sub->last_sent;
+        eval {
+            (my $domain = $sub->subscriber) =~ s/.*\@//;
+            $e->reset;
+            $e->to($sub->subscriber);
+            $e->from('myspam@'. $domain);
+            $e->subject('MySpam Newsletter');
+            $e->list($sub->last_sent);
+            $e->send;
+            $m->subscriber_sent($sub);
+        };
+        $m->log('newsletter('. $sub->period .') => '. $sub->subscriber .
+            ( $@ ? " Fail: $@" : ' OK' ) .
+            ' Previous: '. $delta .'s ago'
+        );
     }
 }
 

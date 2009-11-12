@@ -1,38 +1,14 @@
-myspam (0.10-01) stable; urgency=low
-
-  * New upstream.
-
- -- Mark Lawrence <nomad@null.net>  Wed, 23 Sep 2009 13:46:40 +0200
-
-myspam (0.09-06) stable; urgency=low
-
-  * new upstream
-
- -- Mark Lawrence <nomad@null.net>  Wed, 23 Sep 2009 11:23:05 +0200
-
-myspam (0.09-05) stable; urgency=low
+myspam (0.11-01) stable; urgency=low
 
   * new upstream.
 
- -- Mark Lawrence <nomad@null.net>  Wed, 09 Sep 2009 14:03:48 +0200
+ -- Mark Lawrence <nomad@null.net>  Thu, 12 Nov 2009 12:12:18 +0100
 
-myspam (0.09-04) stable; urgency=low
-
-  * new upstream.
-
- -- Mark Lawrence <nomad@null.net>  Wed, 09 Sep 2009 12:50:59 +0200
-
-myspam (0.09-03) stable; urgency=low
+myspam (0.10-04) stable; urgency=low
 
   * new upstream.
 
- -- Mark Lawrence <nomad@null.net>  Wed, 09 Sep 2009 12:13:02 +0200
-
-myspam (0.09-02) stable; urgency=low
-
-  * new upstream.
-
- -- Mark Lawrence <nomad@null.net>  Wed, 09 Sep 2009 11:42:33 +0200
+ -- Mark Lawrence <nomad@null.net>  Tue, 20 Oct 2009 11:52:28 +0200
 
 myspam (0.09-01) stable; urgency=low
 

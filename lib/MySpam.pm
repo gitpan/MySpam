@@ -16,7 +16,7 @@ use File::Copy;
 use GDBM_File;
 
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 
 define_tables(
@@ -637,7 +637,7 @@ sub subscriber_sent {
 sub subscriber_newsletter_list {
     my $self = shift;
 
-    my $now    = time;
+    my $now    = time + 60*60; # allow one hour grace
     my $day_in_seconds = 60*60*24;
 
     my $subscribers = $self->{db}->arow('subscribers');
@@ -647,8 +647,8 @@ sub subscriber_newsletter_list {
             $subscribers->_columns,
         ],
         from   => $subscribers,
-        where  => ($subscribers->period * $day_in_seconds) <
-                  ($now - $subscribers->last_sent)
+        where  => ($now - $subscribers->last_sent) >
+                  ($subscribers->period * $day_in_seconds)
     );
     return @list;
 }

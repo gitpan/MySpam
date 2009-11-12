@@ -8,9 +8,7 @@ Standards-Version: 3.7.2
 
 Package: myspam
 Architecture: all
-Depends: ${perl:Depends}, ${misc:Depends}, libconfig-file-perl, libdbd-mysql-perl | libdbd-sqlite3-perl (>= 1.14-2), libsql-db-perl (>= 0.16-3), libcompress-bzip2-perl, libemail-simple-perl, libmime-lite-perl, libxml-api-perl (>= 0.24-1), liblockfile-simple-perl, libfile-slurp-perl, libberkeleydb-perl, libmail-rfc822-address-perl
-Conflicts: myspam-server,myspam-common
-Replaces: myspam-server,myspam-common
+Depends: ${perl:Depends}, ${misc:Depends}, libconfig-file-perl, libdbd-mysql-perl | libdbd-sqlite3-perl (>= 1.14-2), libsql-db-perl (>= 0.16-3), libcompress-bzip2-perl, libemail-simple-perl, libmime-lite-perl, libxml-api-perl (>= 0.24-1), liblockfile-simple-perl, libfile-slurp-perl, libberkeleydb-perl, libmail-rfc822-address-perl, libhtml-parser-perl
 Description:  Managed SPAM mails quarantined by sa-exim
  Takes mails blocked by sa-exim and stores them in a database from where
  they can be queried or recovered by users. Has both command-line and

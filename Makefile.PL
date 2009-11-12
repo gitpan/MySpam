@@ -20,6 +20,7 @@ requires        'SQL::DB'            => 0.16;
 requires        'MIME::Base64'       => 0;
 requires        'Compress::Bzip2'    => 0;
 requires        'GDBM_File'          => 0;
+requires        'HTML::Entities'     => 0;
 
 
 install_script  'bin/myspam';

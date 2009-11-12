@@ -22,6 +22,7 @@ requires:
   Email::Simple: 0
   File::Slurp: 0
   GDBM_File: 0
+  HTML::Entities: 0
   LockFile::Simple: 0
   MIME::Base64: 0
   MIME::Lite: 0
@@ -29,4 +30,4 @@ requires:
   SQL::DB: 0.16
   Time::HiRes: 0
   XML::API::XHTML: 0.24
-version: 0.10
+version: 0.11

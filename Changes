@@ -1,3 +1,79 @@
+commit f3e08d73c9aa92dc563acf9e103363c4b1f81516
+Author: Mark Lawrence <nomad@null.net>
+Date:   Thu Nov 12 12:17:03 2009 +0100
+
+    CPAN: Released as v0.11.
+
+commit 2477df773776b0df339abf7e456c536e79c92d14
+Author: Mark Lawrence <nomad@null.net>
+Date:   Thu Nov 12 12:10:02 2009 +0100
+
+    myspam newsletter: Change cmd wording to *over*due for newsletter.
+
+commit 6a1980807e2f4388880817d17e133ed146f2047a
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Oct 23 14:25:51 2009 +0200
+
+    myspam: remove old <days> option from help summary.
+
+commit 8559512056795f28c7533a50290e3d257c6c02d5
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Oct 23 13:57:17 2009 +0200
+
+    Don't generate real emails unless running on my laptop.
+    
+    This was supposed to be done in 46252de5, but a sendmail failure on
+    a CPAN testers Solaris box showed me this not to be the case.
+
+commit c0a55cca6b9d9bde05197cbfd86621fa1a3308a0
+Author: Mark Lawrence <nomad@null.net>
+Date:   Fri Oct 23 13:39:51 2009 +0200
+
+    Adding missing HTML::Entities dependency.
+    
+    Discovered this due to test failures on FreeBSD systems (thanks CPAN
+    testers). Must somehow already be a part of the dependency chain of
+    everything else.
+
+commit 0b75002240521158e97506d912f1071c6f5aeda3
+Author: Mark Lawrence <nomad@null.net>
+Date:   Tue Oct 20 11:49:56 2009 +0200
+
+    Add 'Last Sent' verbosity to newsletter related commands.
+
+commit 697352a1c71881eab0f42a5c207430c3c620a5c5
+Author: Mark Lawrence <nomad@null.net>
+Date:   Tue Oct 20 11:49:17 2009 +0200
+
+    MANIFEST: remove no longer needed inc/Module/Install/Script.pm
+
+commit da8ca00e49f31453a03fd2880a6d98f668a62f02
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 30 16:28:06 2009 +0200
+
+    MySpam: Add an hours grace to the newsletter window.
+
+commit e2049ae11e82ef0e3ea7b875dec0e25309d4c3ba
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 30 16:18:39 2009 +0200
+
+    myspam: Add logging to the newsletter command.
+
+commit f0397ef5860e231de975b056867a0b490f2d178f
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 30 16:17:14 2009 +0200
+
+    MySpam::Email: Added charset information to the MIME attachements.
+    
+    It looks like Email::MIME::Creator might possibility be a better module
+    to use for the mail creation.
+
+commit 61b66b4213cd72b4548c0bdb7a54b1224df3c3c0
+Author: Mark Lawrence <nomad@null.net>
+Date:   Wed Sep 30 15:09:01 2009 +0200
+
+    MySpam::Email: Fix missing "set From: to 'Unknown' on Encode failure"
+
 commit 5b4cdce104284a2357c7f5262b8d1f6ad499ac1b
 Author: Mark Lawrence <nomad@null.net>
 Date:   Wed Sep 23 13:46:00 2009 +0200
